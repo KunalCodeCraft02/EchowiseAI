@@ -4,7 +4,6 @@ services:
     runtime: docker
     plan: free
     dockerfilePath: ./cardiac_ocr_system/backend/Dockerfile
-    dockerContext: ./cardiac_ocr_system/backend
     healthCheckPath: /api/health
     envVars:
       - key: GROQ_API_KEY
