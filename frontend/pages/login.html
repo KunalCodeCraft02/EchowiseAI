@@ -143,9 +143,9 @@
     body.append("password", document.getElementById("password").value);
 
     try {
-      const res = await fetch("/api/auth/login", { method: "POST", body });
+      const res = await fetch(API.base + "/api/auth/login", { method: "POST", body });
+      if (!res.ok) throw new Error(await friendlyError(res));
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Login failed.");
       API.setSession(data.access_token, data.doctor);
       window.location.href = "/dashboard";
     } catch (err) {
