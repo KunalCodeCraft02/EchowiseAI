@@ -1,0 +1,8 @@
+frontend/
+overview.md
+render.yaml
+cardiac_ocr_system/CLAUDE.md
+cardiac_ocr_system/backend/current_logic_review.md
+cardiac_ocr_system/backend/tests/
+cardiac_ocr_system/backend/tools/
+cardiac_ocr_system/sample_reports/
