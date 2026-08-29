@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Account · Cardiac OCR System</title>
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">
+    <span class="logo-heart" aria-hidden="true">
+      <svg viewBox="0 0 40 40" width="30" height="30">
+        <defs>
+          <linearGradient id="lhGrad1" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#2A52BE"/><stop offset="100%" stop-color="#00C9A7"/>
+          </linearGradient>
+          <clipPath id="lhClip1"><path d="M20 34 C10 26 3 19 3 12.5 C3 6.5 7.5 3 12.5 3 C16 3 19 5 20 8 C21 5 24 3 27.5 3 C32.5 3 37 6.5 37 12.5 C37 19 30 26 20 34 Z"/></clipPath>
+        </defs>
+        <path class="lh-shape" d="M20 34 C10 26 3 19 3 12.5 C3 6.5 7.5 3 12.5 3 C16 3 19 5 20 8 C21 5 24 3 27.5 3 C32.5 3 37 6.5 37 12.5 C37 19 30 26 20 34 Z" fill="url(#lhGrad1)"/>
+        <g clip-path="url(#lhClip1)"><rect class="lh-scan" x="-6" y="0" width="7" height="40" fill="rgba(255,255,255,0.9)"/></g>
+        <path class="lh-wave" d="M5,20 L12,20 L15,12 L19,28 L22,9 L25,20 L35,20" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
+    <span class="brand-name">EchoWise AI</span>
+  </div>
+  <button class="nav-toggle" id="nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <nav id="topbar-nav">
+    <a href="/#features">Features</a>
+    <a href="/dashboard" class="nav-auth-only">Previous Records</a>
+    <a href="/login" class="nav-guest-only">Doctor Login / Sign Up</a>
+    <span class="doc-chip nav-auth-only">
+      <span class="doc-avatar" id="doc-avatar" aria-hidden="true"></span>
+      <span class="doc-name" id="doc-name"></span>
+    </span>
+    <button id="logout-btn" class="nav-auth-only" type="button">Logout</button>
+  </nav>
+</div>
+<div class="auth-shell">
+  <div class="auth-side">
+    <div>
+      <div class="brand">Baramati ADT &middot; Cardiology Informatics</div>
+      <h1 style="margin-top:28px;">Every parameter,<br>traced to its source.</h1>
+      <p class="tagline">Set up your doctor account to start uploading reports. Every extracted value is linked back to the exact line it came from, with a confidence score you can trust — or double-check.</p>
+      <ul class="feature-list">
+        <li>OCR-powered extraction from scanned &amp; digital echo reports</li>
+        <li>Confidence-scored parameters flagged for your review</li>
+        <li>AI-assisted disease prediction &amp; rehab guidance</li>
+      </ul>
+    </div>
+    <svg class="ecg-line" viewBox="0 0 600 140" preserveAspectRatio="none">
+      <path d="M0,90 L110,90 L130,40 L150,120 L170,20 L190,90 L260,90 L280,70 L300,90 L600,90"
+            fill="none" stroke="#f6f3ec" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+    </svg>
+    <div class="foot">Medical Cardiac Report OCR, Information Extraction &amp; Predictive Analytics System</div>
+  </div>
+
+  <div class="auth-form-wrap">
+    <div class="auth-card">
+      <h2>Create your account</h2>
+      <div class="sub">For doctors and cardiology staff at Baramati ADT.</div>
+
+      <div class="error-msg" id="error-box"></div>
+
+      <form id="signup-form">
+        <div class="field">
+          <label for="full_name">Full name</label>
+          <input type="text" id="full_name" required placeholder="Dr. Asha Patil">
+        </div>
+        <div class="field">
+          <label for="specialization">Specialization</label>
+          <input type="text" id="specialization" value="Cardiology">
+        </div>
+        <div class="field">
+          <label for="email">Email address</label>
+          <input type="email" id="email" required placeholder="you@hospital.org" autocomplete="username">
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" required minlength="6" placeholder="At least 6 characters" autocomplete="new-password">
+        </div>
+        <button type="submit" class="btn btn-primary" id="submit-btn">Create account</button>
+      </form>
+
+      <div class="hint-link">Already registered? <a href="/login">Sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-col footer-brand-col">
+        <div class="footer-brand">
+          <span class="logo-heart" aria-hidden="true">
+            <svg viewBox="0 0 40 40" width="24" height="24">
+              <defs>
+                <linearGradient id="lhGrad2" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#2A52BE"/><stop offset="100%" stop-color="#00C9A7"/>
+                </linearGradient>
+                <clipPath id="lhClip2"><path d="M20 34 C10 26 3 19 3 12.5 C3 6.5 7.5 3 12.5 3 C16 3 19 5 20 8 C21 5 24 3 27.5 3 C32.5 3 37 6.5 37 12.5 C37 19 30 26 20 34 Z"/></clipPath>
+              </defs>
+              <path class="lh-shape" d="M20 34 C10 26 3 19 3 12.5 C3 6.5 7.5 3 12.5 3 C16 3 19 5 20 8 C21 5 24 3 27.5 3 C32.5 3 37 6.5 37 12.5 C37 19 30 26 20 34 Z" fill="url(#lhGrad2)"/>
+              <g clip-path="url(#lhClip2)"><rect class="lh-scan" x="-6" y="0" width="7" height="40" fill="rgba(255,255,255,0.9)"/></g>
+              <path class="lh-wave" d="M5,20 L12,20 L15,12 L19,28 L22,9 L25,20 L35,20" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="brand-name">EchoWise AI</span>
+        </div>
+        <div class="foot-line">ADT Baramati</div>
+        <div class="foot-line"><a href="mailto:adtbaramatiresearch@gmail.com">adtbaramatiresearch@gmail.com</a></div>
+      </div>
+      <div class="footer-col">
+        <h4>Connect</h4>
+        <div class="footer-social">
+          <a href="#" aria-label="LinkedIn" title="LinkedIn">in</a>
+          <a href="#" aria-label="X (Twitter)" title="X (Twitter)">X</a>
+          <a href="#" aria-label="Instagram" title="Instagram">IG</a>
+          <a href="#" aria-label="YouTube" title="YouTube">YT</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <span id="foot-year"></span> All Rights reserved.</span>
+      <span>Engineered by Research Interns in ADT Baramati</span>
+    </div>
+  </div>
+</footer>
+
+<script src="/static/js/common.js"></script>
+<script>
+  initTopbar();
+  initFooter();
+  if (API.token()) window.location.href = "/dashboard";
+
+  const form = document.getElementById("signup-form");
+  const errorBox = document.getElementById("error-box");
+  const submitBtn = document.getElementById("submit-btn");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorBox.classList.remove("show");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Creating account…";
+
+    try {
+      const data = await API.request("/api/auth/signup", {
+        method: "POST",
+        json: {
+          full_name: document.getElementById("full_name").value.trim(),
+          specialization: document.getElementById("specialization").value.trim() || "Cardiology",
+          email: document.getElementById("email").value.trim(),
+          password: document.getElementById("password").value,
+        },
+      });
+      API.setSession(data.access_token, data.doctor);
+      window.location.href = "/dashboard";
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.classList.add("show");
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Create account";
+    }
+  });
+</script>
+</body>
+</html>

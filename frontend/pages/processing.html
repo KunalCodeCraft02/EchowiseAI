@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Processing · Cardiac OCR System</title>
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="app-shell">
+  <div class="topbar">
+    <div class="brand">
+      <span class="logo-heart" aria-hidden="true">
+        <svg viewBox="0 0 40 40" width="30" height="30">
+          <defs>
+            <linearGradient id="lhGrad1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#2A52BE"/><stop offset="100%" stop-color="#00C9A7"/>
+            </linearGradient>
+            <clipPath id="lhClip1"><path d="M20 34 C10 26 3 19 3 12.5 C3 6.5 7.5 3 12.5 3 C16 3 19 5 20 8 C21 5 24 3 27.5 3 C32.5 3 37 6.5 37 12.5 C37 19 30 26 20 34 Z"/></clipPath>
+          </defs>
+          <path class="lh-shape" d="M20 34 C10 26 3 19 3 12.5 C3 6.5 7.5 3 12.5 3 C16 3 19 5 20 8 C21 5 24 3 27.5 3 C32.5 3 37 6.5 37 12.5 C37 19 30 26 20 34 Z" fill="url(#lhGrad1)"/>
+          <g clip-path="url(#lhClip1)"><rect class="lh-scan" x="-6" y="0" width="7" height="40" fill="rgba(255,255,255,0.9)"/></g>
+          <path class="lh-wave" d="M5,20 L12,20 L15,12 L19,28 L22,9 L25,20 L35,20" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span class="brand-name">EchoWise AI</span>
+    </div>
+    <button class="nav-toggle" id="nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav id="topbar-nav">
+      <a href="/#features">Features</a>
+      <a href="/dashboard" class="nav-auth-only">Previous Records</a>
+      <a href="/login" class="nav-guest-only">Doctor Login / Sign Up</a>
+      <span class="doc-chip nav-auth-only">
+        <span class="doc-avatar" id="doc-avatar" aria-hidden="true"></span>
+        <span class="doc-name" id="doc-name"></span>
+      </span>
+      <button id="logout-btn" class="nav-auth-only" type="button">Logout</button>
+    </nav>
+  </div>
+
+  <div class="processing-wrap">
+    <h2 id="page-heading">Extracting cardiac parameters…</h2>
+    <div class="stage-label" id="stage-label">Starting up</div>
+
+    <div class="ecg-wrap">
+      <svg viewBox="0 0 600 90" width="100%" height="90">
+        <path id="ecg-path" d="M0,45 L180,45 L200,15 L220,75 L240,10 L260,45 L360,45 L380,30 L400,45 L600,45"
+              fill="none" stroke="#c97c2b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <animate attributeName="stroke-dasharray" from="0,1000" to="1000,0" dur="1.6s" repeatCount="indefinite" />
+        </path>
+      </svg>
+    </div>
+
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%;"></div></div>
+      <span class="progress-percent" id="progress-percent">0%</span>
+    </div>
+
+    <div class="stage-steps" id="stage-steps"></div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-grid">
+        <div class="footer-col footer-brand-col">
+          <div class="footer-brand">
+            <span class="logo-heart" aria-hidden="true">
+              <svg viewBox="0 0 40 40" width="24" height="24">
+                <defs>
+                  <linearGradient id="lhGrad2" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#2A52BE"/><stop offset="100%" stop-color="#00C9A7"/>
+                  </linearGradient>
+                  <clipPath id="lhClip2"><path d="M20 34 C10 26 3 19 3 12.5 C3 6.5 7.5 3 12.5 3 C16 3 19 5 20 8 C21 5 24 3 27.5 3 C32.5 3 37 6.5 37 12.5 C37 19 30 26 20 34 Z"/></clipPath>
+                </defs>
+                <path class="lh-shape" d="M20 34 C10 26 3 19 3 12.5 C3 6.5 7.5 3 12.5 3 C16 3 19 5 20 8 C21 5 24 3 27.5 3 C32.5 3 37 6.5 37 12.5 C37 19 30 26 20 34 Z" fill="url(#lhGrad2)"/>
+                <g clip-path="url(#lhClip2)"><rect class="lh-scan" x="-6" y="0" width="7" height="40" fill="rgba(255,255,255,0.9)"/></g>
+                <path class="lh-wave" d="M5,20 L12,20 L15,12 L19,28 L22,9 L25,20 L35,20" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span class="brand-name">EchoWise AI</span>
+          </div>
+          <div class="foot-line">ADT Baramati</div>
+          <div class="foot-line"><a href="mailto:adtbaramatiresearch@gmail.com">adtbaramatiresearch@gmail.com</a></div>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <div class="footer-social">
+            <a href="#" aria-label="LinkedIn" title="LinkedIn">in</a>
+            <a href="#" aria-label="X (Twitter)" title="X (Twitter)">X</a>
+            <a href="#" aria-label="Instagram" title="Instagram">IG</a>
+            <a href="#" aria-label="YouTube" title="YouTube">YT</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; <span id="foot-year"></span> All Rights reserved.</span>
+        <span>Engineered by Research Interns in ADT Baramati</span>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- Extraction failure dialog. Hidden until the poll reports status === "failed". -->
+<div class="modal-backdrop" id="fail-modal" role="dialog" aria-modal="true" aria-labelledby="fail-title">
+  <div class="modal">
+    <div class="modal-icon" id="fail-icon">⚠️</div>
+    <h3 id="fail-title">Extraction failed</h3>
+    <div class="modal-body" id="fail-body"></div>
+    <div class="modal-detail" id="fail-detail" style="display:none;"></div>
+    <div class="modal-actions">
+      <a class="btn btn-primary" href="/upload" id="fail-primary">Upload a different file</a>
+      <!-- Only offered when the document really was a report: typing echo values against a
+           file that has none is worse than not offering the option at all. -->
+      <a class="btn btn-ghost" id="fail-manual" style="display:none;">Enter values manually</a>
+      <a class="btn btn-ghost" href="/dashboard">Back to dashboard</a>
+    </div>
+  </div>
+</div>
+
+<script src="/static/js/common.js"></script>
+<script>
+  API.requireAuth();
+  initTopbar();
+  initFooter();
+
+  const reportUid = window.location.pathname.split("/").pop();
+  const stages = [
+    "Reading uploaded file", "Pre-processing image", "Running OCR engine",
+    "Matching parameter labels", "Validating & scoring", "Complete",
+  ];
+
+  const stepsWrap = document.getElementById("stage-steps");
+  stepsWrap.innerHTML = stages.map((s, i) => `<div class="stage-step" id="step-${i}">${s}</div>`).join("");
+
+  function updateSteps(progress) {
+    const idx = Math.min(Math.floor(progress / (100 / stages.length)), stages.length - 1);
+    stages.forEach((_, i) => {
+      const el = document.getElementById(`step-${i}`);
+      el.classList.remove("done", "active");
+      if (i < idx) el.classList.add("done");
+      else if (i === idx) el.classList.add("active");
+    });
+  }
+
+  // Failure presentation, keyed by the backend's failure_reason (app/ocr/pipeline.py
+  // FAILURE_* constants). The wrong-file case is deliberately worded so nobody is told to
+  // re-scan a screenshot at a higher resolution -- for that file, no scan will ever work.
+  // `detail` decides whether the backend's own sentence is worth repeating underneath: for a
+  // wrong file it adds nothing, for an OCR failure it names the engine that broke.
+  // `manual` offers the review page as a way out -- withheld for wrong_file, where there are no
+  // echo values in the document to transcribe.
+  const FAILURES = {
+    wrong_file: {
+      icon: "🚫",
+      title: "This is not an echo report",
+      body: "The file you uploaded does not appear to be a 2D Echo / cardiac report — no cardiac "
+          + "content was found in it. Please upload the correct report file (a scanned or digital "
+          + "echo report), not a screenshot or an unrelated document.",
+      detail: false, manual: false,
+      action: "Upload the correct report",
+    },
+    no_text: {
+      icon: "🔍",
+      title: "Nothing could be read from this file",
+      body: "No text could be extracted from this document. It may be blank, out of focus, or an "
+          + "unsupported scan.",
+      detail: true, manual: true,
+      action: "Upload a clearer file",
+    },
+    no_parameters: {
+      icon: "⚠️",
+      title: "No cardiac parameters found",
+      body: "The report was read, but none of the cardiac parameters could be recognised. Please "
+          + "re-upload a higher-resolution scan, or enter the values manually.",
+      detail: true, manual: true,
+      action: "Upload a better scan",
+    },
+  };
+  const DEFAULT_FAILURE = {
+    icon: "⚠️", title: "Extraction failed",
+    body: "Something went wrong while processing this report.",
+    detail: true, manual: true, action: "Upload a different file",
+  };
+
+  function showFailure(data) {
+    const spec = FAILURES[data.failure_reason] || DEFAULT_FAILURE;
+    const stage = data.progress_stage || "";
+
+    document.getElementById("fail-icon").textContent = spec.icon;
+    document.getElementById("fail-title").textContent = spec.title;
+    document.getElementById("fail-body").textContent = spec.body;
+    document.getElementById("fail-primary").textContent = spec.action;
+
+    const detailEl = document.getElementById("fail-detail");
+    if (spec.detail && stage) {
+      detailEl.textContent = stage.replace(/^Failed:\s*/, "");
+      detailEl.style.display = "";
+    } else {
+      detailEl.style.display = "none";
+    }
+
+    const manualEl = document.getElementById("fail-manual");
+    manualEl.href = `/report/${reportUid}`;
+    manualEl.style.display = spec.manual ? "" : "none";
+
+    // The page behind the dialog must stop claiming work is still in progress -- the dialog can
+    // be dismissed by a browser back/forward, and a stalled "Extracting…" would be a lie.
+    document.getElementById("page-heading").textContent = "Extraction stopped";
+    document.getElementById("stage-label").textContent = spec.title;
+    document.getElementById("stage-label").style.color = "var(--coral)";
+    document.getElementById("progress-fill").classList.add("failed");
+    document.getElementById("progress-percent").classList.add("failed");
+    document.getElementById("fail-modal").classList.add("show");
+  }
+
+  let attempts = 0;
+  async function poll() {
+    try {
+      const data = await API.request(`/api/reports/${reportUid}/progress`);
+      document.getElementById("progress-fill").style.width = data.progress + "%";
+      document.getElementById("progress-percent").textContent = data.progress + "%";
+      document.getElementById("stage-label").textContent = data.progress_stage;
+      updateSteps(data.progress);
+
+      if (data.status === "extracted" || data.status === "reviewed") {
+        document.getElementById("stage-label").textContent = "Extraction complete — opening report…";
+        setTimeout(() => { window.location.href = `/report/${reportUid}`; }, 700);
+        return;
+      }
+      if (data.status === "failed") {
+        showFailure(data);
+        return;
+      }
+      attempts++;
+      setTimeout(poll, 1200);
+    } catch (err) {
+      if (attempts++ < 5) setTimeout(poll, 1500);
+    }
+  }
+  poll();
+</script>
+</body>
+</html>

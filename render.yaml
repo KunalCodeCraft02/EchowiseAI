@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: echowiseai-backend
+    runtime: docker
+    plan: free
+    dockerfilePath: ./cardiac_ocr_system/backend/Dockerfile
+    dockerContext: ./cardiac_ocr_system/backend
+    healthCheckPath: /api/health
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: SECRET_KEY
+        sync: false

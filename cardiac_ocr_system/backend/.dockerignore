@@ -1,0 +1,14 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+.env.*
+cardiac.db
+app/uploads/*
+extractions/*
+tests/
+tools/.ocr_cache/
+*.json
+current_logic_review.md

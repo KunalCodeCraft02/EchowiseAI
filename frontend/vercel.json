@@ -1,0 +1,11 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/pages/home.html" },
+    { "source": "/login", "destination": "/pages/login.html" },
+    { "source": "/signup", "destination": "/pages/signup.html" },
+    { "source": "/dashboard", "destination": "/pages/dashboard.html" },
+    { "source": "/upload", "destination": "/pages/upload.html" },
+    { "source": "/processing/:uid", "destination": "/pages/processing.html" },
+    { "source": "/report/:uid", "destination": "/pages/report.html" }
+  ]
+}

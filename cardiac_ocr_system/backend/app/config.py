@@ -28,7 +28,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 12  # 12 hours
 
 # --- File uploads ---
-UPLOAD_DIR = BASE_DIR / "app" / "uploads"
+UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", str(BASE_DIR / "app" / "uploads")))
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 ALLOWED_EXTENSIONS = {".pdf", ".png", ".jpg", ".jpeg", ".tiff", ".bmp", ".webp"}
 MAX_UPLOAD_SIZE_MB = 25
