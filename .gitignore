@@ -1,0 +1,25 @@
+# OS / editor junk
+__MACOSX/
+.DS_Store
+Thumbs.db
+
+# Unrelated local tooling (not part of the app)
+.mimocode/
+
+# Node (frontend tooling / Vercel CLI, if added)
+node_modules/
+.vercel
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+.pytest_cache/
+
+# Secrets — never commit
+.env
+.env.*
+*.pem
+*credentials*.json
+*service-account*.json

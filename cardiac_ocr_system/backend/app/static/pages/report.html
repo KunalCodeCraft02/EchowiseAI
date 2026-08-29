@@ -1,0 +1,1981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Report · Cardiac OCR System</title>
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="app-shell">
+  <div class="topbar">
+    <div class="brand">
+      <span class="logo-heart" aria-hidden="true">
+        <svg viewBox="0 0 40 40" width="30" height="30">
+          <defs>
+            <linearGradient id="lhGrad1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#2A52BE"/><stop offset="100%" stop-color="#00C9A7"/>
+            </linearGradient>
+            <clipPath id="lhClip1"><path d="M20 34 C10 26 3 19 3 12.5 C3 6.5 7.5 3 12.5 3 C16 3 19 5 20 8 C21 5 24 3 27.5 3 C32.5 3 37 6.5 37 12.5 C37 19 30 26 20 34 Z"/></clipPath>
+          </defs>
+          <path class="lh-shape" d="M20 34 C10 26 3 19 3 12.5 C3 6.5 7.5 3 12.5 3 C16 3 19 5 20 8 C21 5 24 3 27.5 3 C32.5 3 37 6.5 37 12.5 C37 19 30 26 20 34 Z" fill="url(#lhGrad1)"/>
+          <g clip-path="url(#lhClip1)"><rect class="lh-scan" x="-6" y="0" width="7" height="40" fill="rgba(255,255,255,0.9)"/></g>
+          <path class="lh-wave" d="M5,20 L12,20 L15,12 L19,28 L22,9 L25,20 L35,20" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span class="brand-name">EchoWise AI</span>
+    </div>
+    <button class="nav-toggle" id="nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav id="topbar-nav">
+      <a href="/#features">Features</a>
+      <a href="/dashboard" class="nav-auth-only">Previous Records</a>
+      <a href="/login" class="nav-guest-only">Doctor Login / Sign Up</a>
+      <span class="doc-chip nav-auth-only">
+        <span class="doc-avatar" id="doc-avatar" aria-hidden="true"></span>
+        <span class="doc-name" id="doc-name"></span>
+      </span>
+      <button id="logout-btn" class="nav-auth-only" type="button">Logout</button>
+    </nav>
+  </div>
+
+  <div class="page-wrap">
+    <!-- General advisory, ahead of every parameter section: incomplete data is the single
+         biggest driver of a weak prediction, and the doctor should see that before filling in
+         a single field, not discover it after the fact next to a completeness count. -->
+    <div class="advisory-note" role="note">
+      Fill in as many parameters as possible for the most accurate prediction results.
+    </div>
+
+    <div class="page-head">
+      <div>
+        <h1 id="patient-name">Loading…</h1>
+        <div class="sub" id="report-sub"></div>
+      </div>
+      <div id="status-badge"></div>
+    </div>
+
+    <div class="card">
+      <div class="report-meta" id="report-meta"></div>
+
+      <!-- BSA & Physical Parameters Section (always visible) -->
+      <div id="bsa-section"></div>
+
+      <!-- The nine Tier-1 hard-stop groups the exercise-safety rule screens on. They sit at the -->
+      <div id="compulsory-section"></div>
+
+      <!-- Sections are built at runtime from /api/reports/meta/sections, which is served
+           straight from parameter_dict.py. Previously this markup hardcoded its own field
+           list, so a parameter could extract perfectly and still never appear on screen. -->
+      <div id="param-sections"></div>
+
+      <div class="section-title">Additional Notes</div>
+      <div class="field" style="margin-top:8px;">
+        <textarea id="extra-findings" placeholder="Any additional clinical notes for this patient…"></textarea>
+      </div>
+
+      <div class="action-row">
+        <div class="left-actions">
+          <button class="btn btn-primary" id="save-btn" style="width:auto;">Save Review</button>
+          <span id="save-status" style="color:var(--ink-soft); font-size:13.5px;"></span>
+        </div>
+        <button class="btn btn-predict" id="predict-btn" style="width:auto;">Check Disease</button>
+      </div>
+
+      <!-- "Predict Disease" loading state: a scanning ring + live stage text/percentage. Purely
+           presentational -- runPrediction() drives it around the one existing POST call below. -->
+      <div class="predict-run-panel" id="predict-run-panel" hidden>
+        <div class="predict-ring" aria-hidden="true"><span class="predict-ring-core"></span></div>
+        <div class="predict-run-text">
+          <span class="predict-stage" id="predict-stage" role="status">Starting prediction engine…</span>
+          <span class="predict-percent" id="predict-percent">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- The report's own Impression/Conclusion, shown verbatim. -->
+    <div class="card" id="impression-card" style="display:none; margin-top:24px;">
+      <div class="section-title" style="margin-top:0;">Impression / Conclusion</div>
+      <div class="sub" style="margin-bottom:10px;">
+        Reproduced exactly as written in the uploaded report — not summarized or reworded.
+      </div>
+      <div class="raw-text-box" id="impression-body"></div>
+    </div>
+
+    <div class="completeness-line" id="completeness-line" style="display:none; margin-top:24px;"></div>
+    <div class="card prediction-section" id="prediction-card" style="display:none; margin-top:10px;">
+      <div class="section-title" style="margin-top:0;">Cardiac Disease Prediction</div>
+      <div id="prediction-body"></div>
+    </div>
+
+    <!-- Exercise results. Holds the Exercise Safety verdict, the athlete / sports screening and
+         the per-disease exercise plans -- everything that is guidance about EXERCISE rather than
+         a diagnosis. Hidden until "Predict Exercise based on Disease" is clicked. -->
+    <div class="card prediction-section" id="care-plans-card" style="display:none; margin-top:24px;">
+      <div class="section-title" style="margin-top:0;">Exercise Safety &amp; Rehabilitation by Disease</div>
+      <div id="care-plans-body"></div>
+    </div>
+
+    <div class="card prediction-section" id="care-plan-card" style="display:none; margin-top:24px;">
+      <div class="section-title" style="margin-top:0;">AI-Generated Rehabilitation Exercise Plan</div>
+      <div id="care-plan-body"></div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-grid">
+        <div class="footer-col footer-brand-col">
+          <div class="footer-brand">
+            <span class="logo-heart" aria-hidden="true">
+              <svg viewBox="0 0 40 40" width="24" height="24">
+                <defs>
+                  <linearGradient id="lhGrad2" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#2A52BE"/><stop offset="100%" stop-color="#00C9A7"/>
+                  </linearGradient>
+                  <clipPath id="lhClip2"><path d="M20 34 C10 26 3 19 3 12.5 C3 6.5 7.5 3 12.5 3 C16 3 19 5 20 8 C21 5 24 3 27.5 3 C32.5 3 37 6.5 37 12.5 C37 19 30 26 20 34 Z"/></clipPath>
+                </defs>
+                <path class="lh-shape" d="M20 34 C10 26 3 19 3 12.5 C3 6.5 7.5 3 12.5 3 C16 3 19 5 20 8 C21 5 24 3 27.5 3 C32.5 3 37 6.5 37 12.5 C37 19 30 26 20 34 Z" fill="url(#lhGrad2)"/>
+                <g clip-path="url(#lhClip2)"><rect class="lh-scan" x="-6" y="0" width="7" height="40" fill="rgba(255,255,255,0.9)"/></g>
+                <path class="lh-wave" d="M5,20 L12,20 L15,12 L19,28 L22,9 L25,20 L35,20" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span class="brand-name">EchoWise AI</span>
+          </div>
+          <div class="foot-line">ADT Baramati</div>
+          <div class="foot-line"><a href="mailto:adtbaramatiresearch@gmail.com">adtbaramatiresearch@gmail.com</a></div>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <div class="footer-social">
+            <a href="#" aria-label="LinkedIn" title="LinkedIn">in</a>
+            <a href="#" aria-label="X (Twitter)" title="X (Twitter)">X</a>
+            <a href="#" aria-label="Instagram" title="Instagram">IG</a>
+            <a href="#" aria-label="YouTube" title="YouTube">YT</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; <span id="foot-year"></span> All Rights reserved.</span>
+        <span>Engineered by Research Interns in ADT Baramati</span>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script src="/static/js/vendor/gsap.min.js"></script>
+<script src="/static/js/common.js"></script>
+<script>
+  API.requireAuth();
+  initTopbar();
+  initFooter();
+
+  // ---------- Smooth scroll + entrance animation (GSAP) ----------
+  // Smooth scrolling is native CSS (`scroll-behavior: smooth` on <html>, in style.css) rather
+  // than Locomotive Scroll's transform-based virtual scroll: on this page --
+  // long, form-heavy, with content injected by JS well after first paint -- Locomotive's wheel
+  // handling never actually engaged (its internal scroll offset stayed at 0 under both a real
+  // wheel event and a dispatched one), while its `overflow: hidden` scroll-lock stayed applied
+  // with nothing compensating for it, which produced a page that goes completely blank the
+  // moment a doctor scrolls. That is not a tradeoff worth "smooth" for a clinical review tool, so
+  // this page uses the standards-based mechanism instead. GSAP (vendored locally, no CDN
+  // dependency) still drives every animation below.
+  const REDUCE_MOTION = window.matchMedia
+    && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // No-op under native scrolling (the browser already knows its own document height). Left as
+  // the one place every dynamic re-render already calls, so a future scroll-height-aware
+  // mechanism has a single hook to fill in rather than new call sites to thread through again.
+  function refreshScroll() {}
+
+  function smoothScrollTo(el) {
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // A light, one-time entrance for the page's top-level cards -- the same restrained motion
+  // language as the existing "reveal" keyframe, just applied on first paint instead of only on a
+  // freshly generated result.
+  //
+  // SAFETY NET: this is a clinical review page, so an animation is never allowed to be the only
+  // thing standing between a doctor and the data on it. gsap.from() sets opacity:0 as its
+  // starting inline style and animates OFF of it -- if that tween never finishes (a backgrounded
+  // tab throttles requestAnimationFrame, the page navigates mid-animation, anything), the content
+  // stays invisible at whatever opacity the tween stalled on. Measured in testing: real, not
+  // hypothetical. `gsap.set(..., {clearProps: ...})` on a hard timeout, independent of the
+  // tween's own onComplete, guarantees every targeted element is fully visible no later than
+  // ANIMATION_MS + SAFETY_MARGIN_MS after this runs, no matter what GSAP itself does.
+  const ENTRANCE_TARGETS = ".page-wrap > .card, .page-wrap > .page-head";
+  function animateEntrance() {
+    if (REDUCE_MOTION || typeof gsap === "undefined") return;
+    const targets = document.querySelectorAll(ENTRANCE_TARGETS);
+    if (!targets.length) return;
+    try {
+      gsap.from(targets, { opacity: 0, y: 14, duration: 0.5, stagger: 0.07, ease: "power2.out" });
+    } catch (err) { /* fall through to the safety net below regardless */ }
+    setTimeout(() => {
+      // A backgrounded tab (a doctor switches away while the report loads -- an entirely
+      // realistic scenario, not just a test artifact) throttles requestAnimationFrame, which
+      // makes the tween keep ticking in slow motion for many seconds. Killing it here first
+      // stops it from re-writing opacity on the NEXT throttled tick and fighting this override.
+      if (typeof gsap !== "undefined") gsap.killTweensOf(targets);
+      targets.forEach(el => { el.style.opacity = ""; el.style.transform = ""; });
+    }, 1200);
+  }
+
+  const reportUid = window.location.pathname.split("/").pop();
+
+  // Section layout + labels come from parameter_dict.py via /api/reports/meta/sections, so the
+  // page always shows exactly the parameters the extractor knows about.
+  let SECTIONS = [];
+  let FIELD_LABELS = {};
+  // Blank-field dropdowns: options, units and the ALREADY-RESOLVED value for every age group,
+  // served from value_table.py. Nothing about a clinical band is computed in this file — the page
+  // only looks up what the backend resolved, so the two can never drift.
+  let DROPDOWNS = { options: {}, units: {}, value_table: {}, age_groups: {}, custom_notes: {} };
+
+  // Which dropdown selection produced each doctor-filled value, sent back with the save so the
+  // rule engine knows a value was CHOSEN rather than measured (it caps the confidence of any
+  // finding resting on one). Keyed by field; cleared when a field is cleared.
+  let parameterSources = {};
+
+  // Shown when a parameter has no value. "not in report" states what is actually true -- the
+  // report did not contain this parameter -- where the old "Not detected" read like a failure
+  // of the scan. The manual-entry affordance is unchanged: the box is still editable.
+  const NULL_PLACEHOLDER = "not in report — enter manually";
+
+  const badgeLabel = {
+    uploaded: "Queued", processing: "Processing", extracted: "Extracted",
+    reviewed: "Reviewed", failed: "Failed",
+  };
+
+  // ---------- Compulsory parameters ----------
+  // The nine Tier-1 hard-stop groups of _rule_exercise_safety() in rules_v4.py, in the same
+  // order and over the same fields. THESE TWO LISTS MUST STAY IN SYNC: a field added to a group
+  // there has to be added here, or the review page will let a doctor save a report the engine
+  // then reports as indeterminate.
+  //
+  // `anyOf: true` means the group's fallback chain is satisfied by ANY one of its fields --
+  // an aortic gradient, a velocity or the finding text all let the aortic-stenosis group be
+  // graded, so demanding all three would be demanding data the echo may never have printed.
+  const COMPULSORY_GROUPS = [
+    { key: "ef",        title: "Ejection Fraction",        fields: ["ef"], anyOf: false },
+    { key: "as",        title: "Aortic Stenosis",          fields: ["av_peak_gradient", "av_peak_velocity", "av_finding"], anyOf: true },
+    { key: "ms",        title: "Mitral Stenosis",          fields: ["mv_peak_gradient", "mv_peak_velocity", "mv_finding"], anyOf: true },
+    { key: "pasp",      title: "Pulmonary Pressure (PASP)", fields: ["pasp", "tv_peak_gradient", "tv_peak_velocity", "ivc"], anyOf: true },
+    { key: "effusion",  title: "Pericardial Effusion",     fields: ["pericardial_effusion"], anyOf: false },
+    { key: "thrombus",  title: "Clots / Thrombus",         fields: ["clots_thrombus"], anyOf: false },
+    { key: "lvot",      title: "LVOT Obstruction",         fields: ["lvot_peak_gradient", "lvot_peak_velocity"], anyOf: true },
+    { key: "rwma",      title: "Regional Wall Motion Abnormality (Ischemia)", fields: ["wall_motion", "rwma"], anyOf: true },
+    { key: "ivsd",      title: "Septal Thickness (HOCM screening)", fields: ["ivsd"], anyOf: false },
+  ];
+
+  const COMPULSORY_FIELDS = new Set(COMPULSORY_GROUPS.flatMap(g => g.fields));
+
+  let report = null;
+
+  // ---------- Age group / sex resolution ----------
+  // The four bands of the master rule document (Children 0-14 / Youth 15-24 / Adults 25-64 /
+  // Elderly 65+), read from the age the patient info already carries. An unusable age takes the
+  // documented Adults fallback rather than guessing a band — the same rule MRE-000 states, and
+  // the same one value_table.py applies server-side.
+  function patientAgeGroup() {
+    const match = String(report && report.patient_age || "").match(/\d{1,3}/);
+    if (!match) return DROPDOWNS.default_age_group || "adults";
+    const age = parseInt(match[0], 10);
+    if (age < 0 || age > 120) return DROPDOWNS.default_age_group || "adults";
+    for (const [key, band] of Object.entries(DROPDOWNS.age_groups || {})) {
+      if (age >= band.min_age && age <= band.max_age) return key;
+    }
+    return DROPDOWNS.default_age_group || "adults";
+  }
+
+  function patientSex() {
+    const g = String(report && report.patient_gender || "").trim().toLowerCase();
+    if (g.startsWith("m")) return "male";
+    if (g.startsWith("f")) return "female";
+    return "unknown";
+  }
+
+  function ageGroupMeta() {
+    return (DROPDOWNS.age_groups || {})[patientAgeGroup()] || {};
+  }
+
+  // 0-14: the pediatric table is deliberately empty, so every option — including "Normal" —
+  // routes to free-text entry instead of resolving to a number.
+  function pediatricPending() {
+    return !!ageGroupMeta().force_custom_entry;
+  }
+
+  // The resolved entry for one option, or null when this age group has no published value for it.
+  function dropdownEntry(field, option) {
+    const perGroup = (DROPDOWNS.value_table || {})[field];
+    if (!perGroup) return null;
+    const group = perGroup[patientAgeGroup()];
+    if (!group) return null;                       // children: not enumerated, by design
+    const table = group.by_sex ? group.by_sex[patientSex()] : group;
+    return (table && table[option]) || null;
+  }
+
+  function fieldUnit(field) {
+    return (DROPDOWNS.units || {})[field] || null;
+  }
+
+  // A field the report never stated defaults to "Normal" rather than sitting blank, so the card
+  // never reads as an empty gap -- the doctor reviews/confirms it (or corrects it) instead of
+  // typing a value from scratch for every miss. Resolved against the age/sex table when the
+  // field's own dropdown publishes a "Normal" band (initAutoNormalDefaults(), below); the plain
+  // word otherwise. Either way the field is ALWAYS flagged for confirmation, regardless of what
+  // the backend's flagged_params says -- that list is about OCR confidence, and there is nothing
+  // to be confident ABOUT when nothing was extracted.
+  const AUTO_NORMAL_VALUE = "Normal";
+
+  function normalDropdownOption(field) {
+    const options = (DROPDOWNS.options || {})[field] || [];
+    return options.includes(AUTO_NORMAL_VALUE) ? AUTO_NORMAL_VALUE : null;
+  }
+
+  // One collapsed helper line per card (§1): a blank field with a dropdown shows its guidance/
+  // resolved-band text; every other field carries no helper line. OCR confidence and "not present
+  // in this report" text used to live here -- both were internal debug info and never belonged in
+  // front of a clinician, so neither is rendered anywhere any more.
+  const INDEXED_FIELDS = ["lvidd_indexed_value", "la_diameter_indexed_value", "lv_mass"];
+
+  function calculateDuBoisBsa(heightCm, weightKg) {
+    if (!heightCm || !weightKg || heightCm <= 0 || weightKg <= 0) return null;
+    const bsa = 0.007184 * Math.pow(heightCm, 0.725) * Math.pow(weightKg, 0.425);
+    return Math.round(bsa * 100) / 100;
+  }
+
+  function getBsaSourceTag(bsaVal, bsaSource) {
+    if (bsaVal != null && bsaVal !== "" && String(bsaVal).trim() !== "") {
+      const src = String(bsaSource || "").toLowerCase();
+      if (src.includes("report")) {
+        return { text: `BSA: ${bsaVal} m² (from report)`, cls: "bsa-tag-report", src: "from report" };
+      } else if (src.includes("calc")) {
+        return { text: `BSA: ${bsaVal} m² (calculated from height/weight)`, cls: "bsa-tag-calc", src: "calculated" };
+      } else {
+        return { text: `BSA: ${bsaVal} m² (manual entry)`, cls: "bsa-tag-manual", src: "manual entry" };
+      }
+    }
+    return { text: "BSA: — (required)", cls: "bsa-tag-missing", src: "missing" };
+  }
+
+  function renderBsaSection() {
+    const host = document.getElementById("bsa-section");
+    if (!host) return;
+    const bsaVal = (report.parameters && report.parameters.bsa) || report.bsa || "";
+    const heightVal = (report.parameters && report.parameters.height) || report.height || "";
+    const weightVal = (report.parameters && report.parameters.weight) || report.weight || "";
+    const tagInfo = getBsaSourceTag(bsaVal, report.bsa_source);
+
+    host.innerHTML = `
+      <div class="bsa-card">
+        <div class="bsa-head">
+          <div class="bsa-title">Body Surface Area (BSA) &amp; Physical Parameters</div>
+          <div class="bsa-tag ${tagInfo.cls}" id="bsa-source-badge">${escapeHtml(tagInfo.text)}</div>
+        </div>
+        <div class="bsa-grid">
+          <div class="bsa-field-item">
+            <label for="bsa-input">BSA (m²)</label>
+            <input type="text" id="bsa-input" data-field="bsa" value="${escapeHtml(String(bsaVal))}" placeholder="e.g. 2.01" />
+          </div>
+          <div class="bsa-field-item">
+            <label for="height-input">Height (cm)</label>
+            <input type="text" id="height-input" data-field="height" value="${escapeHtml(String(heightVal))}" placeholder="e.g. 175" />
+          </div>
+          <div class="bsa-field-item">
+            <label for="weight-input">Weight (kg)</label>
+            <input type="text" id="weight-input" data-field="weight" value="${escapeHtml(String(weightVal))}" placeholder="e.g. 70" />
+          </div>
+        </div>
+      </div>`;
+
+    bindBsaInputEvents();
+  }
+
+  function bindBsaInputEvents() {
+    const bsaInp = document.getElementById("bsa-input");
+    const hInp = document.getElementById("height-input");
+    const wInp = document.getElementById("weight-input");
+
+    const onPhysicalChange = () => {
+      const h = parseFloat(hInp ? hInp.value : "");
+      const w = parseFloat(wInp ? wInp.value : "");
+      if (!isNaN(h) && !isNaN(w) && h > 0 && w > 0) {
+        if (report.bsa_source !== "manual entry" || !bsaInp.value) {
+          const calc = calculateDuBoisBsa(h, w);
+          if (calc != null) {
+            if (bsaInp) bsaInp.value = String(calc);
+            report.bsa_source = "calculated";
+          }
+        }
+      }
+      liveRecalculateIndexedFields();
+    };
+
+    if (hInp) hInp.addEventListener("input", onPhysicalChange);
+    if (wInp) wInp.addEventListener("input", onPhysicalChange);
+
+    if (bsaInp) {
+      bsaInp.addEventListener("input", () => {
+        const v = bsaInp.value.trim();
+        if (v !== "") {
+          report.bsa_source = "manual entry";
+        } else {
+          report.bsa_source = "missing";
+        }
+        liveRecalculateIndexedFields();
+      });
+    }
+  }
+
+  function liveRecalculateIndexedFields() {
+    const bsaInp = document.getElementById("bsa-input");
+    const badge = document.getElementById("bsa-source-badge");
+    const bsaVal = bsaInp ? parseFloat(bsaInp.value) : null;
+    const hasBsa = bsaVal != null && !isNaN(bsaVal) && bsaVal > 0;
+
+    const tagInfo = getBsaSourceTag(hasBsa ? bsaVal : "", report.bsa_source);
+    if (badge) {
+      badge.className = `bsa-tag ${tagInfo.cls}`;
+      badge.textContent = tagInfo.text;
+    }
+
+    const getVal = (f) => {
+      const el = document.querySelector(`input[data-field="${f}"]`);
+      if (!el) return null;
+      const v = parseFloat(el.value);
+      return isNaN(v) ? null : v;
+    };
+
+    const lvidd = getVal("lvidd");
+    const la = getVal("la_diameter");
+    const ivsd = getVal("ivsd");
+    const pwd = getVal("pwd");
+    const lvMass = getVal("lv_mass");
+
+    // 1. LVIDd / BSA (mm/m²)
+    const lviddCard = document.querySelector(`.param-card[data-field="lvidd_indexed_value"]`);
+    const lviddInp = lviddCard ? lviddCard.querySelector("input[data-field]") : null;
+    if (lviddCard && lviddInp) {
+      if (hasBsa && lvidd != null && lvidd > 0) {
+        const lviddMm = lvidd <= 15 ? lvidd * 10 : lvidd;
+        const res = (lviddMm / bsaVal).toFixed(1);
+        lviddInp.value = res;
+        lviddCard.classList.remove("flagged", "is-empty");
+        updateIndexedCardTag(lviddCard, tagInfo);
+      } else if (!hasBsa) {
+        lviddInp.value = "";
+        lviddInp.placeholder = "Requires manual BSA entry";
+        lviddCard.classList.add("flagged");
+        updateIndexedCardTag(lviddCard, null);
+      }
+    }
+
+    // 2. LA / BSA (cm/m²)
+    const laCard = document.querySelector(`.param-card[data-field="la_diameter_indexed_value"]`);
+    const laInp = laCard ? laCard.querySelector("input[data-field]") : null;
+    if (laCard && laInp) {
+      if (hasBsa && la != null && la > 0) {
+        const laCm = la > 15 ? la / 10 : la;
+        const res = (laCm / bsaVal).toFixed(1);
+        laInp.value = res;
+        laCard.classList.remove("flagged", "is-empty");
+        updateIndexedCardTag(laCard, tagInfo);
+      } else if (!hasBsa) {
+        laInp.value = "";
+        laInp.placeholder = "Requires manual BSA entry";
+        laCard.classList.add("flagged");
+        updateIndexedCardTag(laCard, null);
+      }
+    }
+
+    // 3. LVMI (g/m²)
+    const lvmiCard = document.querySelector(`.param-card[data-field="lv_mass"]`);
+    const lvmiInp = lvmiCard ? lvmiCard.querySelector("input[data-field]") : null;
+    if (lvmiCard && lvmiInp) {
+      if (hasBsa) {
+        if (lvMass != null && lvMass > 140) {
+          const res = (lvMass / bsaVal).toFixed(1);
+          lvmiInp.value = res;
+        } else if (ivsd != null && lvidd != null && pwd != null) {
+          const ivsCm = ivsd >= 3.0 ? ivsd / 10 : ivsd;
+          const lvidCm = lvidd > 15 ? lvidd / 10 : lvidd;
+          const pwCm = pwd >= 3.0 ? pwd / 10 : pwd;
+          const mass = 0.8 * 1.04 * (Math.pow(ivsCm + lvidCm + pwCm, 3) - Math.pow(lvidCm, 3)) + 0.6;
+          const res = (mass / bsaVal).toFixed(1);
+          lvmiInp.value = res;
+        }
+        lvmiCard.classList.remove("flagged", "is-empty");
+        updateIndexedCardTag(lvmiCard, tagInfo);
+      } else if (!hasBsa) {
+        if (lvMass == null || lvMass > 140) {
+          lvmiInp.value = "";
+        }
+        lvmiInp.placeholder = "Requires manual BSA entry";
+        lvmiCard.classList.add("flagged");
+        updateIndexedCardTag(lvmiCard, null);
+      }
+    }
+  }
+
+  function updateIndexedCardTag(cardEl, tagInfo) {
+    if (!cardEl) return;
+    let help = cardEl.querySelector(".p-help");
+    if (!help) {
+      help = document.createElement("div");
+      help.className = "p-help";
+      cardEl.appendChild(help);
+    }
+    if (tagInfo) {
+      help.innerHTML = `<span class="p-bsa-tag ${tagInfo.cls}">${escapeHtml(tagInfo.text)}</span>`;
+    } else {
+      help.innerHTML = `<span class="p-bsa-missing-tag">Requires manual BSA entry</span>`;
+    }
+  }
+
+  // Returns true when `value` is a bare dropdown grade label (e.g. "Normal", "Mildly Dilated")
+  // for a field whose dropdown resolves to a NUMERIC band. Such a value was extracted as a
+  // qualitative text fallback (chamber_size kind) or came from an older auto-default that stored
+  // the grade word verbatim rather than the resolved "X mm (Normal)" form. Treating it as "no
+  // real measurement" lets the dropdown + reference range machinery run so the doctor sees the
+  // proper 3-part structure (dropdown / numeric value / reference range) rather than a bare text
+  // box labelled "Normal".
+  function isBareDradeValue(field, value) {
+    if (value == null) return false;
+    const v = String(value).trim();
+    if (!v) return false;
+    const opts = (DROPDOWNS.options || {})[field] || [];
+    // Only treat it as a bare grade if it exactly matches a dropdown option name AND
+    // that option resolves to a numeric value (not qualitative / descriptive).
+    if (!opts.includes(v)) return false;
+    const entry = dropdownEntry(field, v);
+    // If the option resolves to a numeric value (entry.value present), the stored
+    // string is a bare grade, not a real measurement. Qualitative/descriptive entries
+    // (wall_motion, valve findings, etc.) are correctly stored as text, so leave them.
+    return entry != null && !entry.custom && entry.value != null;
+  }
+
+  function paramCard(field, value, confidence, isFlagged) {
+    const label = FIELD_LABELS[field] || field;
+    const rawValue = value != null && String(value).trim() !== "" ? String(value).trim() : null;
+    // A bare grade word ("Normal", "Mildly Dilated") for a numeric field has no real measurement
+    // behind it -- treat it as absent so the dropdown + reference range machinery is offered.
+    const isBareGrade = rawValue != null && isBareDradeValue(field, rawValue);
+    const hasValue = rawValue != null && !isBareGrade;
+    const unit = fieldUnit(field);
+    const options = (DROPDOWNS.options || {})[field] || [];
+    const offerDropdown = (!hasValue) && options.length > 0;
+    const isIndexedField = INDEXED_FIELDS.includes(field);
+    const bsaVal = (report.parameters && report.parameters.bsa) || report.bsa || "";
+    const hasBsa = bsaVal != null && String(bsaVal).trim() !== "";
+
+    const needsConfirmation = isFlagged || !hasValue || (isIndexedField && !hasBsa);
+    const unitTag = unit ? ` <span class="p-unit">${escapeHtml(unit)}</span>` : "";
+    // Pre-select the matching grade word in the dropdown if the stored value was a bare grade.
+    const normalOption = offerDropdown
+      ? (isBareGrade ? rawValue : normalDropdownOption(field))
+      : null;
+
+    const select = !offerDropdown ? "" : `
+        <select class="p-select" data-select="${field}" aria-label="${escapeHtml(label)} value">
+          <option value="">— choose a value —</option>
+          ${options.map(o => `<option value="${escapeHtml(o)}" ${o === normalOption ? "selected" : ""}>${escapeHtml(o)}</option>`).join("")}
+        </select>`;
+
+    const bsaTagHtml = isIndexedField
+      ? (hasBsa ? `<span class="p-bsa-tag ${getBsaSourceTag(bsaVal, report.bsa_source).cls}">${escapeHtml(getBsaSourceTag(bsaVal, report.bsa_source).text)}</span>` : `<span class="p-bsa-missing-tag">Requires manual BSA entry</span>`)
+      : "";
+
+    const helpText = offerDropdown
+      ? (pediatricPending() ? (ageGroupMeta().notice || "") : (DROPDOWNS.custom_notes || {})[field] || "")
+      : "";
+
+    const flagUi = !needsConfirmation ? "" : `
+        <span class="p-flag-badge" title="Needs your confirmation" aria-hidden="true">!</span>
+        <button type="button" class="icon-btn confirm-btn" data-confirm="${field}"
+                title="Mark confirmed" aria-label="Mark ${escapeHtml(label)} confirmed">✓</button>`;
+
+    const fieldMeta = (report.extraction_meta && report.extraction_meta[field]) || {};
+    const isSegmental = Boolean(fieldMeta.segmental && fieldMeta.segments);
+    const segs = isSegmental ? fieldMeta.segments : null;
+
+    if (isSegmental) {
+      let maxNum = null;
+      if (fieldMeta[field + "_max"] != null) {
+        maxNum = fieldMeta[field + "_max"];
+      } else if (fieldMeta.segment_values_mm && fieldMeta.segment_values_mm.max != null) {
+        maxNum = fieldMeta.segment_values_mm.max;
+      } else {
+        const nums = [segs.basal, segs.mid, segs.apical].map(s => {
+          const m = String(s || "").match(/(\d+(?:\.\d+)?)/);
+          return m ? parseFloat(m[1]) : null;
+        }).filter(n => n != null);
+        if (nums.length) maxNum = Math.max(...nums);
+      }
+      const maxDisplay = maxNum != null ? `${maxNum} mm` : (value ? String(value) : "—");
+
+      return `
+        <div class="param-card segmental-card ${needsConfirmation ? 'flagged' : ''}" data-field="${field}">
+          <div class="p-label-row">
+            <div class="p-label">${escapeHtml(label)}${unitTag}</div>
+            ${flagUi}
+          </div>
+          <div class="seg-grid">
+            <div class="seg-col">
+              <label class="seg-col-label">Basal</label>
+              <input type="text" class="seg-input" data-field="${field}" data-seg="basal"
+                     value="${escapeHtml(segs.basal || '')}" placeholder="—" />
+            </div>
+            <div class="seg-col">
+              <label class="seg-col-label">Mid</label>
+              <input type="text" class="seg-input" data-seg="mid"
+                     value="${escapeHtml(segs.mid || '')}" placeholder="—" />
+            </div>
+            <div class="seg-col">
+              <label class="seg-col-label">Apical</label>
+              <input type="text" class="seg-input" data-seg="apical"
+                     value="${escapeHtml(segs.apical || '')}" placeholder="—" />
+            </div>
+          </div>
+          <div class="seg-max-banner" id="seg-max-${field}">
+            <span class="seg-max-badge">Max: <strong class="seg-max-val">${escapeHtml(maxDisplay)}</strong></span>
+            <span class="seg-max-sub">— used for severity classification</span>
+          </div>
+          <div class="p-help" data-help="${field}" title="${escapeHtml(helpText)}">${bsaTagHtml || escapeHtml(helpText)}</div>
+        </div>`;
+    }
+
+    const displayValue = (isIndexedField && !hasBsa) ? (hasValue ? String(value) : "") : (hasValue ? String(value) : AUTO_NORMAL_VALUE);
+    const placeholderText = (isIndexedField && !hasBsa) ? "Requires manual BSA entry" : (offerDropdown ? 'choose above, or Custom for an exact value' : NULL_PLACEHOLDER);
+
+    return `
+      <div class="param-card ${needsConfirmation ? 'flagged' : ''} ${!hasValue ? 'is-empty' : ''} ${offerDropdown ? 'has-dropdown' : ''}" data-field="${field}">
+        <div class="p-label-row">
+          <div class="p-label">${escapeHtml(label)}${unitTag}</div>
+          ${flagUi}
+        </div>
+        ${select}
+        <input type="text" value="${escapeHtml(displayValue)}" data-field="${field}"
+               placeholder="${placeholderText}" />
+        <div class="p-help" data-help="${field}" title="${escapeHtml(helpText)}">${bsaTagHtml || escapeHtml(helpText)}</div>
+      </div>`;
+  }
+
+  function initAutoNormalDefaults() {
+    if (pediatricPending()) return;
+    const bsaVal = (report.parameters && report.parameters.bsa) || report.bsa || "";
+    const hasBsa = bsaVal != null && String(bsaVal).trim() !== "";
+    // Handle both genuinely empty cards (.is-empty) and cards where OCR stored a bare grade word
+    // for a numeric field — those render with .has-dropdown but no resolved numeric value yet.
+    document.querySelectorAll(".param-card[data-field]").forEach(card => {
+      const field = card.dataset.field;
+      if (INDEXED_FIELDS.includes(field) && !hasBsa) return; // Do NOT default Normal when BSA missing
+      // Only process: (a) empty cards, or (b) cards with a bare grade stored value
+      const isEmptyCard = card.classList.contains("is-empty");
+      const inp = card.querySelector("input[data-field]");
+      const storedValue = (report.parameters || {})[field];
+      const isBareGrade = storedValue != null && isBareDradeValue(field, String(storedValue).trim());
+      if (!isEmptyCard && !isBareGrade) return;
+      const option = normalDropdownOption(field);
+      if (!option) return;
+      const entry = dropdownEntry(field, option);
+      if (!entry || entry.custom || !entry.value) return;
+      const select = card.querySelector("select[data-select]");
+      if (select) select.value = option;
+      applySelection(field, option);
+    });
+  }
+
+  // ---------- Dropdown behaviour ----------
+  // One handler for every blank field, in both the compulsory section and the sections below.
+  // Selecting a graded option writes the age-group-resolved value into the field's own input (the
+  // one the save and the compulsory-group validation already read), so nothing downstream had to
+  // learn about dropdowns. Custom — and every option in the pediatric band — hands the doctor a
+  // free-text box instead.
+  function bindDropdowns() {
+    document.querySelectorAll("select[data-select]").forEach(sel => {
+      sel.addEventListener("change", () => applySelection(sel.dataset.select, sel.value));
+    });
+  }
+
+  function applySelection(field, option) {
+    const card = document.querySelector(`.param-card[data-field="${CSS.escape(field)}"]`);
+    if (!card) return;
+    const input = card.querySelector(`input[data-field]`);
+    const help = card.querySelector(`[data-help]`);
+    const unit = fieldUnit(field);
+    const custom = DROPDOWNS.custom_option || "Custom";
+    const baseNote = (DROPDOWNS.custom_notes || {})[field] || "";
+    const setHelp = (text) => { help.textContent = text; help.title = text; };
+
+    if (!option) {                       // back to "— choose a value —"
+      input.hidden = true;
+      input.readOnly = false;
+      input.value = "";
+      setHelp(pediatricPending() ? (ageGroupMeta().notice || "") : baseNote);
+      delete parameterSources[field];
+      return;
+    }
+
+    const entry = option === custom ? null : dropdownEntry(field, option);
+    const pediatric = pediatricPending();
+    // No resolvable value: Custom, the pediatric band, or a grade the guidelines state in words
+    // only (LV mass "mildly above", the missing moderate septal band). All three mean the same
+    // thing here — the doctor types the number, and nothing is invented on their behalf.
+    if (pediatric || !entry || entry.custom || !entry.value) {
+      input.hidden = false;
+      input.readOnly = false;
+      input.value = "";
+      input.placeholder = unit ? `exact value in ${unit}` : "exact value";
+      input.focus();
+      setHelp(pediatric ? (ageGroupMeta().notice || "") : ((entry && entry.note) || baseNote));
+      parameterSources[field] = {
+        source: "doctor_custom", option: option,
+        age_group: patientAgeGroup(), resolved_display: (entry && entry.display) || null,
+        unit: unit,
+      };
+      return;
+    }
+
+    input.hidden = false;
+    input.readOnly = true;               // the value is the table's, not free text
+    input.value = entry.value;
+    // The band and the age group it came from. Where a band is sex-specific the display text
+    // already names the sex, so it is not repeated here.
+    setHelp(`${option}: ${entry.display} — ${ageGroupMeta().label || "Adults"} (from age-group table)`);
+    parameterSources[field] = {
+      source: "doctor_dropdown", option: option, age_group: patientAgeGroup(),
+      resolved_display: entry.display || null, unit: unit,
+    };
+  }
+
+  // Shown above the parameter form for a 0-14 patient: the dropdowns still appear, but nothing
+  // they offer resolves to a number, and the report carries that caveat into the prediction.
+  function pediatricBanner() {
+    if (!pediatricPending()) return "";
+    return `<div class="pediatric-note" role="note">
+        <strong>Pediatric reference ranges not yet clinically validated.</strong>
+        ${escapeHtml(ageGroupMeta().notice || "")}
+      </div>`;
+  }
+
+  function renderCompulsory() {
+    const host = document.getElementById("compulsory-section");
+    const flagged = new Set(report.flagged_params || []);
+    const groups = COMPULSORY_GROUPS.map(g => {
+      const cards = g.fields.map(f =>
+        paramCard(f, report.parameters[f], report.confidence_scores[f], flagged.has(f))
+      ).join("");
+      // Sits directly beside the group title (not pinned to the top-right corner) so the
+      // constraint is visible without scanning across the row.
+      const rule = g.anyOf
+        ? `<span class="cg-rule">fill at least one</span>`
+        : `<span class="cg-rule">required — no fallback</span>`;
+      return `
+        <div class="compulsory-group" data-group="${g.key}">
+          <div class="cg-head">
+            <span class="cg-title">${escapeHtml(g.title)}<span class="cg-req" aria-hidden="true">*</span>${rule}</span>
+          </div>
+          <div class="param-grid">${cards}</div>
+          <div class="cg-error" role="alert"></div>
+        </div>`;
+    }).join("");
+
+    host.innerHTML = `
+      <div class="section-title">
+        Compulsory Parameters
+        <span class="section-count">all 9 groups must be answered before saving</span>
+      </div>
+      ${pediatricBanner()}
+      <div class="compulsory-note">
+        These nine groups are the hard stops the exercise-safety screen runs on. A group left
+        entirely blank is <strong>not</strong> read as normal — the screen simply cannot be
+        completed. Fields marked <span class="cg-req" aria-hidden="true">*</span> are required.
+      </div>
+      <div class="compulsory-grid">${groups}</div>`;
+  }
+
+  function compulsoryFieldValue(field) {
+    const input = document.querySelector(`#compulsory-section input[data-field="${field}"]`);
+    return input ? input.value.trim() : "";
+  }
+
+  // A group passes on ONE filled field. Highlights every group that is entirely empty and
+  // returns their titles, so the caller can block the save and say which ones are short.
+  function validateCompulsory() {
+    const missing = [];
+    let firstEmpty = null;
+    for (const g of COMPULSORY_GROUPS) {
+      const box = document.querySelector(`.compulsory-group[data-group="${g.key}"]`);
+      if (!box) continue;
+      const filled = g.fields.some(f => compulsoryFieldValue(f) !== "");
+      box.classList.toggle("is-missing", !filled);
+      box.querySelector(".cg-error").textContent = filled ? "" :
+        (g.anyOf ? "Fill at least one field in this group." : "This parameter is required.");
+      if (!filled) {
+        missing.push(g.title);
+        if (!firstEmpty) firstEmpty = box;
+      }
+    }
+    if (firstEmpty) smoothScrollTo(firstEmpty);
+    return missing;
+  }
+
+  const BSA_PHYSICAL_FIELDS = new Set(["bsa", "height", "weight"]);
+
+  function renderSections() {
+    const host = document.getElementById("param-sections");
+    const flagged = new Set(report.flagged_params || []);
+    host.innerHTML = SECTIONS.map(sec => {
+      // Compulsory and BSA/physical fields live in dedicated sections above; rendering them twice
+      // would give the same parameter two editable boxes that could disagree with each other.
+      const fields = sec.fields.filter(f => !COMPULSORY_FIELDS.has(f) && !BSA_PHYSICAL_FIELDS.has(f));
+      if (!fields.length) return "";
+      const cards = fields.map(f =>
+        paramCard(f, report.parameters[f], report.confidence_scores[f], flagged.has(f))
+      ).join("");
+      const found = fields.filter(f => {
+        const v = report.parameters[f];
+        return v != null && String(v).trim() !== "";
+      }).length;
+      return `
+        <div class="section-title">
+          ${escapeHtml(sec.title)}
+          <span class="section-count">${found}/${fields.length} in report</span>
+        </div>
+        <div class="param-grid">${cards}</div>`;
+    }).join("");
+  }
+
+  function renderImpression() {
+    const card = document.getElementById("impression-card");
+    const text = report.impression_text;
+    if (!text || !String(text).trim()) { card.style.display = "none"; return; }
+    card.style.display = "";
+    // textContent, never innerHTML: this is the report's own words, reproduced exactly.
+    document.getElementById("impression-body").textContent = text;
+  }
+
+  function render() {
+    document.getElementById("patient-name").textContent = report.patient_name;
+    document.getElementById("report-sub").textContent =
+      `Report ID: ${report.report_uid} · ${report.patient_age || '—'} / ${report.patient_gender || '—'} · ${report.original_filename || ''}`;
+    document.getElementById("status-badge").innerHTML =
+      `<span class="badge badge-${report.status}">${badgeLabel[report.status] || report.status}</span>`;
+
+    document.getElementById("report-meta").innerHTML = `
+      <div class="meta-item"><div class="label">Uploaded</div><div class="value">${new Date(report.created_at).toLocaleString()}</div></div>
+      <div class="meta-item"><div class="label">Flagged Parameters</div><div class="value">${(report.flagged_params || []).length}</div></div>
+      <div class="meta-item"><div class="label">Confirmed by Doctor</div><div class="value">${(report.doctor_confirmed || []).length}</div></div>
+      <div class="meta-item"><div class="label">Outdoor Sports Person</div><div class="value">${report.is_athlete ? "Yes" : "No"}</div></div>
+    `;
+
+    renderBsaSection();
+    renderCompulsory();
+    renderSections();
+    renderImpression();
+
+    document.getElementById("extra-findings").value = report.extra_findings || "";
+
+    document.querySelectorAll(".confirm-btn").forEach(btn => {
+      btn.addEventListener("click", () => confirmField(btn.dataset.confirm));
+    });
+
+    // Segmental live max recalculation and change tracking
+    document.querySelectorAll(".param-card.segmental-card").forEach(card => {
+      const field = card.dataset.field;
+      card.querySelectorAll(".seg-input").forEach(inp => {
+        inp.addEventListener("input", () => {
+          const basalInp = card.querySelector(`input[data-seg="basal"]`);
+          const midInp = card.querySelector(`input[data-seg="mid"]`);
+          const apicalInp = card.querySelector(`input[data-seg="apical"]`);
+          const maxValElem = card.querySelector(`.seg-max-val`);
+          const nums = [basalInp?.value, midInp?.value, apicalInp?.value].map(s => {
+            const m = String(s || "").match(/(\d+(?:\.\d+)?)/);
+            return m ? parseFloat(m[1]) : null;
+          }).filter(n => n != null);
+          if (nums.length && maxValElem) {
+            const maxVal = Math.max(...nums);
+            maxValElem.textContent = `${maxVal} mm`;
+          }
+          liveRecalculateIndexedFields();
+        });
+      });
+    });
+
+    bindDropdowns();
+    initAutoNormalDefaults();
+
+    // Attach listeners for live recalculation when base measurements change
+    ["lvidd", "la_diameter", "ivsd", "pwd", "lv_mass"].forEach(f => {
+      document.querySelectorAll(`input[data-field="${f}"]`).forEach(inp => {
+        inp.addEventListener("input", liveRecalculateIndexedFields);
+      });
+    });
+    liveRecalculateIndexedFields();
+
+    renderPrediction();
+    renderCarePlans();
+    renderCarePlan();
+    refreshScroll();
+  }
+
+  // ---------- Disease prediction + AI care plan ----------
+  function escapeHtml(s) {
+    return (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  // Minimal, dependency-free markdown-ish renderer for LLM output: #/##/### headings, "- "/"* "
+  // bullet lists, and **bold**. Escapes HTML first (untrusted LLM text). Headings are matched
+  // BEFORE the bullet/paragraph split so a "### Heading" line never falls through to <p> with a
+  // literal hash character still in it -- the bug this renderer used to have.
+  function mdToHtml(text) {
+    if (!text) return "";
+    const escaped = escapeHtml(text);
+    const lines = escaped.split(/\r?\n/);
+    let html = "";
+    let inList = false;
+    const closeList = () => { if (inList) { html += "</ul>"; inList = false; } };
+    for (const raw of lines) {
+      const line = raw.trim();
+      const heading = line.match(/^(#{1,6})\s+(.*)/);
+      if (heading) {
+        closeList();
+        const level = Math.min(heading[1].length + 2, 6);   // ## -> <h4>, so it nests under h1/h2
+        if (line) html += `<h${level}>${heading[2]}</h${level}>`;
+        continue;
+      }
+      const bullet = line.match(/^[-*]\s+(.*)/);
+      if (bullet) {
+        if (!inList) { html += "<ul>"; inList = true; }
+        html += `<li>${bullet[1]}</li>`;
+      } else {
+        closeList();
+        if (line) html += `<p>${line}</p>`;
+      }
+    }
+    closeList();
+    // **bold** first, then any single-asterisk *italic* left over -- in that order, so a bold
+    // span's own asterisks are already consumed and can't be mis-read as a stray italic pair.
+    return html
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\*(.+?)\*/g, "<em>$1</em>");
+  }
+
+  // ---------- Disease scoring (confidence / prediction / severity) ----------
+  // THREE INDEPENDENT 0-100 SCALES, computed by the rule engine and rendered as-is. They do not
+  // sum to 100 and are not shares of one number:
+  //
+  //   Confidence  how many INDEPENDENT sources support the finding (a measured number, a
+  //               qualitative finding field, the conclusion text, a corroborating parameter).
+  //               An estimated value, or one the doctor chose from a dropdown instead of
+  //               measuring, is capped well below what a multi-source finding can reach.
+  //   Prediction  how far past the AGE-GROUP-RESOLVED threshold the measurement sat.
+  //   Severity    the engine's own mild/moderate/severe grading, on the age-adjusted bands.
+  //
+  // The previous version of this row split ONE score three ways, which made the numbers move
+  // against each other — grading a finding severe pushed "confidence" down although nothing about
+  // the evidence had changed. Nothing is computed here any more; see rules_v4.py §9.
+  //
+  // Only entries in the `diseases` list carry scores. Normal Heart, Athlete Screening, Exercise
+  // Safety and the Risk Score do not, and their cards render without this row.
+  //
+  // Dynamic colour tier -- purely a presentation mapping of the number the rule engine already
+  // computed, never a new computation of its own: >70% reads as high (coral/red), 40-70% as
+  // medium (amber/orange), <40% as low (green/teal). Applied per-value below (each gauge is
+  // coloured by ITS OWN percentage) and, in diseaseCard(), once more at the whole-card level
+  // driven by severity_score specifically.
+  function scoreTier(pct) {
+    if (pct == null) return null;
+    if (pct > 70) return "high";
+    if (pct >= 40) return "medium";
+    return "low";
+  }
+
+  // Small circular gauge -- an SVG ring whose filled arc length is the percentage, coloured by
+  // scoreTier(value). Same underlying number as the old flat chip, just easier to scan at a
+  // glance across a row of cards.
+  function circularGauge(label, value, tip) {
+    if (value == null) return "";
+    const tier = scoreTier(value);
+    const r = 15.5, c = 2 * Math.PI * r;
+    const pct = Math.min(Math.max(value, 0), 100);
+    const offset = (c * (1 - pct / 100)).toFixed(2);
+    return `
+      <div class="gauge gauge-${tier}" title="${escapeHtml(tip)}">
+        <div class="gauge-ring">
+          <svg viewBox="0 0 36 36" width="46" height="46" aria-hidden="true">
+            <circle class="gauge-track" cx="18" cy="18" r="${r}"></circle>
+            <circle class="gauge-fill" cx="18" cy="18" r="${r}"
+                    stroke-dasharray="${c.toFixed(2)}" stroke-dashoffset="${offset}"
+                    transform="rotate(-90 18 18)"></circle>
+          </svg>
+          <div class="gauge-text"><span class="gauge-value">${value}%</span></div>
+        </div>
+        <span class="gauge-name">${label}</span>
+      </div>`;
+  }
+
+  function scoreRow(d) {
+    if (d.confidence_score == null && d.prediction_score == null && d.severity_score == null) {
+      return "";
+    }
+    return `<div class="score-row" title="Three independent 0-100 scores. They are not shares of one total and do not add up to 100%.">
+      ${circularGauge("Confidence", d.confidence_score,
+             "How many independent sources support this finding — a measured value, a "
+             + "qualitative finding, the report conclusion, a corroborating parameter. An "
+             + "estimated or doctor-selected value is capped low. Independent of the other two.")}
+      ${circularGauge("Prediction", d.prediction_score,
+             "How far past the threshold for this patient's age group the measurement sat. "
+             + "Binary findings use a fixed moderate default. Independent of the other two.")}
+      ${circularGauge("Severity", d.severity_score,
+             `The ${d.severity || "info"} grading of this finding on the age-adjusted bands. `
+             + "Independent of the other two.")}
+    </div>`;
+  }
+
+  // Physician feedback, keyed by disease name, loaded with the report.
+  let confirmations = {};
+
+  function confirmationFor(name) {
+    return confirmations[name] || { confirmed: false, clinician_notes: "", is_stale: false };
+  }
+
+  function diseaseCard(d, opts) {
+    const name = d.cardiac_disease_name || d.name;
+    // Feedback footer unless a caller explicitly opts out (every call site passes an explicit
+    // options object, never a bare array index).
+    const feedback = !(opts && opts.feedback === false);
+    const fb = confirmationFor(name);
+    const points = (d.supporting_points || []).map(p => `<li>${escapeHtml(p)}</li>`).join("");
+    const safeSeverity = String(d.severity || "info").replace(/[^a-z-]/gi, "");
+
+    // Dynamic severity-tier accent (§1): High severity_score (>70%) -> coral/red, medium
+    // (40-70%) -> amber/orange, low (<40%) -> green/teal. Falls back to prediction_score, then
+    // confidence_score, when severity_score itself is absent. Cards with no score at all (Normal
+    // Heart, Athlete Screening, Exercise Safety verdict) get no tier class and keep the existing
+    // string-severity styling (.severity-*) untouched below.
+    const tierScore = d.severity_score != null ? d.severity_score
+                     : d.prediction_score != null ? d.prediction_score
+                     : d.confidence_score;
+    const tier = scoreTier(tierScore);
+    const tierClass = tier ? ` tier-${tier}` : "";
+
+    // Shade intensity scaled to severity/prediction score (§2) -- higher score, deeper tint, in
+    // the colour family the tier above resolved to. Only for genuine disease findings
+    // (opts.shade), never for Normal Heart / Athlete Screening / Exercise Safety cards, which
+    // keep the one muted "needs attention" treatment instead.
+    let shadeStyle = "";
+    if (opts && opts.shade && !["normal", "info"].includes(safeSeverity)) {
+      const score = Math.max(d.severity_score || 0, d.prediction_score || 0);
+      const alpha = (0.05 + (Math.min(Math.max(score, 0), 100) / 100) * 0.22).toFixed(3);
+      const TIER_RGB = { high: "179,57,44", medium: "189,86,32", low: "0,128,107" };
+      const rgb = TIER_RGB[tier] || TIER_RGB.high;
+      shadeStyle = ` style="background: rgba(${rgb}, ${alpha});"`;
+    }
+
+    // The feedback footer is the clinician validation loop: an optional confirm toggle and a
+    // free-text correction box. Both are optional -- a doctor who does nothing changes nothing.
+    const feedbackHtml = !feedback ? "" : `
+      <div class="disease-feedback">
+        ${fb.is_stale ? `<div class="stale-note">⚠ The prediction changed since you reviewed this.
+          Your note is kept below — please re-review.</div>` : ""}
+        <div class="fb-row">
+          <button class="btn btn-ghost btn-sm confirm-disease ${fb.confirmed ? 'is-confirmed' : ''}"
+                  data-disease="${escapeHtml(name)}">
+            ${fb.confirmed ? "✓ Confirmed" : "Mark Confirmed"}
+          </button>
+          <span class="fb-hint">${fb.confirmed
+            ? "You confirmed this prediction." : "Optional — confirm if you agree."}</span>
+        </div>
+        <label class="fb-label" for="notes-${escapeHtml(name)}">Additional Notes</label>
+        <textarea class="disease-notes" id="notes-${escapeHtml(name)}"
+                  data-disease="${escapeHtml(name)}"
+                  placeholder="Corrections, a missed diagnosis, or why you disagree…"
+        >${escapeHtml(fb.clinician_notes || "")}</textarea>
+      </div>`;
+
+    return `
+      <div class="disease-card severity-${safeSeverity}${tierClass} ${fb.confirmed ? 'confirmed' : ''} ${fb.is_stale ? 'stale' : ''}"${shadeStyle}>
+        <div class="d-head">
+          <div>
+            <div class="d-name">${escapeHtml(name)}</div>
+            <div class="d-category">${escapeHtml(d.category || "")}</div>
+          </div>
+          ${scoreRow(d)}
+        </div>
+        ${points ? `<div class="sup-points"><div class="sup-title">Supporting Points &amp; Rules</div><ul>${points}</ul></div>` : ""}
+        ${d.recommendation ? `<div class="d-rec">${escapeHtml(d.recommendation)}</div>` : ""}
+        ${feedbackHtml}
+      </div>`;
+  }
+
+  // ---------- Clinician feedback persistence ----------
+  async function saveConfirmation(diseaseName, body) {
+    try {
+      const saved = await API.request(`/api/reports/${reportUid}/confirmations`, {
+        method: "POST",
+        json: Object.assign({ disease_name: diseaseName }, body),
+      });
+      confirmations[diseaseName] = saved;
+      return saved;
+    } catch (err) {
+      showToast(err.message);
+      return null;
+    }
+  }
+
+  function bindFeedbackHandlers() {
+    document.querySelectorAll(".confirm-disease").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const name = btn.dataset.disease;
+        const next = !confirmationFor(name).confirmed;
+        // Persist the notes currently in the box too, so an unsaved edit is never lost by
+        // toggling confirm.
+        const box = document.querySelector(`.disease-notes[data-disease="${CSS.escape(name)}"]`);
+        const saved = await saveConfirmation(name, {
+          confirmed: next,
+          clinician_notes: box ? box.value : undefined,
+        });
+        if (saved) { renderPrediction(); showToast(next ? "Prediction confirmed." : "Confirmation removed."); }
+      });
+    });
+
+    document.querySelectorAll(".disease-notes").forEach(box => {
+      let last = box.value;
+      box.addEventListener("blur", async () => {
+        if (box.value === last) return;      // don't write on every focus change
+        last = box.value;
+        const saved = await saveConfirmation(box.dataset.disease, { clinician_notes: box.value });
+        if (saved) showToast("Note saved.");
+      });
+    });
+  }
+
+  function riskBadgeClass(level) {
+    if (!level) return "risk-indeterminate";
+    return "risk-" + level.toLowerCase().replace(/\s+/g, "-");
+  }
+
+  // Directly above the Cardiac Disease Prediction card, per spec -- a completeness count is more
+  // actionable placed where a doctor decides whether to keep filling fields, not buried inside
+  // the card body among the results themselves.
+  function renderCompleteness() {
+    const line = document.getElementById("completeness-line");
+    const pred = report.predicted_diseases;
+    if (!pred) { line.style.display = "none"; return; }
+    line.style.display = "";
+    const evaluated = pred.rules_evaluated ?? 0;
+    const total = pred.rules_total ?? 51;
+    line.textContent = `Based on ${evaluated} of ${total} parameters entered`;
+  }
+
+  function renderPrediction() {
+    const card = document.getElementById("prediction-card");
+    const body = document.getElementById("prediction-body");
+    const pred = report.predicted_diseases;
+
+    renderCompleteness();
+
+    if (!pred) {
+      card.style.display = "none";
+      return;
+    }
+    card.style.display = "block";
+
+    // Athlete Screening and Exercise Safety are guidance about EXERCISE, not diagnoses, so
+    // neither belongs in this list. Both are rendered in the exercise results section instead,
+    // after "Predict Exercise based on Disease" is clicked. The filter is defensive: the engine
+    // keeps them in their own keys, but a stray one here would read as a predicted disease.
+    const diseases = (pred.diseases || []).filter(
+      d => d.category !== "Athlete Screening" && d.category !== "Exercise Safety");
+
+    const generatedNote = report.prediction_generated_at
+      ? `Last run: ${new Date(report.prediction_generated_at).toLocaleString()}` : "";
+
+    // The "Insufficient Data Risk" badge is removed entirely (§2) -- the completeness line above
+    // and the advisory note at the top of the page replace it. Every other risk level still
+    // shows its badge.
+    const showRiskBadge = pred.risk_level && pred.risk_level !== "Insufficient Data";
+    let html = `
+      <div class="risk-summary-bar">
+        ${showRiskBadge ? `<span class="risk-badge ${riskBadgeClass(pred.risk_level)}">${escapeHtml(pred.risk_level)} Risk</span>` : ""}
+        <span class="rules-meta">${generatedNote}</span>
+      </div>
+      <div class="disclaimer-box">⚠ ${escapeHtml(pred.disclaimer || "")}</div>
+    `;
+
+    // The report itself carries the pediatric caveat, not just the review form: a 0-14 study was
+    // graded with no validated reference ranges behind its dropdown-filled values.
+    if (pred.pending_pediatric_review) {
+      html += `<div class="pediatric-note" role="note">
+          <strong>Pediatric reference ranges not yet clinically validated.</strong>
+          ${escapeHtml(pred.pediatric_notice || "")}
+        </div>`;
+    }
+
+    // Result messaging by outcome (§2): no disease is a warm, positive result in green; each
+    // predicted disease shades red independently, deeper for a higher severity/prediction score.
+    if (diseases.length === 0) {
+      html += `<div class="outcome-message outcome-normal">
+          No cardiac disease detected in the available parameters — looking good!
+        </div>`;
+      if (pred.normal_heart) html += diseaseCard(pred.normal_heart);
+    } else {
+      html += diseases.map(d => diseaseCard(d, { shade: true })).join("");
+    }
+
+    html += `<div class="prediction-cta-row">
+      <button class="btn btn-ai btn-cta" id="care-plans-btn">Create Exercise &amp; Rehabilitation Plan</button>
+      <button class="btn btn-ghost btn-sm" id="recommend-btn">Generate combined plan (legacy)</button>
+    </div>
+    <div id="run-panels"></div>`;
+
+    body.innerHTML = html;
+    bindFeedbackHandlers();
+    document.getElementById("recommend-btn").addEventListener("click", runRecommend);
+    document.getElementById("care-plans-btn").addEventListener("click", runCarePlans);
+  }
+
+  // ---------- Run progress ----------
+  // TWO KINDS, and the difference is deliberate.
+  //
+  //   measured  — "Predict Exercise based on Disease". The backend generates one plan per
+  //               disease and commits done/total after each, so the percentage shown is a real
+  //               count of completed work polled from the server. It is never advanced by a
+  //               timer: if generation stalls on disease 3, the bar stalls at disease 3, which
+  //               is the information the clinician actually needs.
+  //   spinner   — the legacy combined plan. One opaque LLM call with nothing to count, so it
+  //               keeps the honest spinner. A percentage here would be decoration pretending to
+  //               be information, which is the reason this file had none before.
+  const RUN_CONFIG = {
+    "care-plans-btn": {
+      panelId: "run-care-plans",
+      mode: "measured",
+      pollMs: 700,
+      // Shown until the first poll lands, i.e. before any real count exists to display.
+      startLabel: "Starting exercise plan generation…",
+    },
+    "recommend-btn": {
+      panelId: "run-recommend",
+      mode: "spinner",
+      stages: [
+        { label: "Collecting all predictions…",         ms: 1300 },
+        { label: "Merging exercise & disease outputs…", ms: 4000 },
+        { label: "Formatting combined report…",         ms: 3000 },
+      ],
+    },
+  };
+
+  const runners = {};
+
+  function createRunner(buttonId) {
+    const cfg = RUN_CONFIG[buttonId];
+    const state = { timer: null, panel: null, polling: false };
+
+    function panel() {
+      const host = document.getElementById("run-panels");
+      if (!host) return null;
+      let el = document.getElementById(cfg.panelId);
+      if (!el) {
+        el = document.createElement("div");
+        el.id = cfg.panelId;
+        el.className = "run-panel" + (cfg.mode === "measured" ? " run-panel-measured" : "");
+        // The percentage row is only built for a measured run -- there is nothing truthful to
+        // put in it otherwise. It starts hidden: a measured run has no real count to show until
+        // its first poll lands, and a static "0%" sitting still read as broken rather than
+        // working. The indeterminate stripe below covers that gap for both run modes; measured
+        // mode swaps it out for the real bar the instant real numbers exist (see poll()).
+        const meter = cfg.mode === "measured" ? `
+          <div class="run-meter" data-role="meter" hidden>
+            <div class="run-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+                 aria-valuenow="0" data-role="bar-outer">
+              <div class="run-bar-fill" data-role="bar"></div>
+            </div>
+            <span class="run-percent" data-role="percent">0%</span>
+          </div>` : "";
+        el.innerHTML = `
+          <div class="run-line">
+            <span class="run-spinner" data-role="spinner" aria-hidden="true">
+              <span class="ric-icon">🏃</span><span class="ric-icon">❤️</span>
+              <span class="ric-icon">🥗</span><span class="ric-icon">🍎</span>
+            </span>
+            <span class="run-stage" data-role="stage" role="status"></span>
+            <button type="button" class="btn btn-ghost btn-sm run-retry" data-role="retry"
+                    hidden>Retry</button>
+          </div>
+          <div class="run-indeterminate" data-role="indeterminate" aria-hidden="true"></div>
+          ${meter}`;
+        host.appendChild(el);
+      }
+      return el;
+    }
+
+    // renderPrediction() can rebuild the whole prediction body mid-run (a confirm toggle does
+    // it), which detaches the panel. Re-acquiring rather than holding a stale node means a
+    // run survives that instead of writing into a node nobody can see.
+    function ensurePanel() {
+      if (!state.panel || !state.panel.isConnected) state.panel = panel();
+      return state.panel;
+    }
+
+    const part = role => state.panel && state.panel.querySelector(`[data-role="${role}"]`);
+
+    function setStage(index) {
+      if (!ensurePanel()) return;
+      part("stage").textContent = cfg.stages[index].label;
+      if (index + 1 < cfg.stages.length) {
+        state.timer = setTimeout(() => setStage(index + 1), cfg.stages[index].ms);
+      }
+    }
+
+    // ---- measured mode -------------------------------------------------------------------
+    // Percent comes from the server's own count of finished plans. It is only ever written
+    // here, from a poll response — no interpolation, no easing towards the next value.
+    function paint(pct, label) {
+      if (!ensurePanel()) return;
+      const bar = part("bar"), outer = part("bar-outer"), percent = part("percent");
+      if (bar) bar.style.width = `${pct}%`;
+      if (outer) outer.setAttribute("aria-valuenow", String(pct));
+      if (percent) percent.textContent = `${pct}%`;
+      if (label) part("stage").textContent = label;
+    }
+
+    // Swaps between the indeterminate stripe (nothing real to report yet) and the measured bar
+    // (a real count exists). Spinner-mode runs have no meter at all, so this only ever toggles
+    // the stripe there -- it stays on for the whole run, which is honest: there is never a real
+    // number to replace it with.
+    function showIndeterminate(show) {
+      if (!ensurePanel()) return;
+      const stripe = part("indeterminate"), meter = part("meter");
+      if (stripe) stripe.hidden = !show;
+      if (meter) meter.hidden = show;
+    }
+
+    function describe(p) {
+      // "Plan 3 of 7 — <disease>" counts the one being written now, which is done + 1: `done`
+      // is how many have FINISHED, so during the third call done === 2.
+      if (p.status === "done" || p.done >= p.total) return "Finalizing plans…";
+      const position = Math.min(p.done + 1, p.total);
+      const name = p.current ? ` — ${p.current}` : "";
+      return `Plan ${position} of ${p.total}${name}`;
+    }
+
+    async function poll() {
+      if (!state.polling) return;
+      try {
+        const p = await API.request(`/api/reports/${reportUid}/care-plans/progress`);
+        // A stale "done" from a previous run must not paint 100% over a run that just started
+        // and has not yet published its first update.
+        if (state.polling && p.status === "running") {
+          // First real number this run has seen: swap the indeterminate stripe for the actual
+          // measured bar, once, right before painting it.
+          showIndeterminate(false);
+          paint(p.progress, describe(p));
+        }
+      } catch (err) {
+        // A failed poll is not a failed run: the POST is the source of truth for success or
+        // failure, so a hiccup here just means this tick shows nothing new.
+      }
+      if (state.polling) state.timer = setTimeout(poll, cfg.pollMs);
+    }
+
+    function restoreButton() {
+      const btn = document.getElementById(buttonId);
+      if (!btn) return;
+      btn.disabled = false;              // never left permanently disabled
+    }
+
+    function start() {
+      const btn = document.getElementById(buttonId);
+      state.panel = panel();
+      if (!state.panel || !btn) return;
+
+      clearTimeout(state.timer);
+      state.panel.classList.remove("is-error");
+      part("retry").hidden = true;
+      part("spinner").hidden = false;
+      btn.disabled = true;
+      // Every run starts on the indeterminate stripe -- there is nothing real to show yet, and a
+      // static "0%" sitting still read as stalled rather than working.
+      showIndeterminate(true);
+
+      if (cfg.mode === "measured") {
+        part("stage").textContent = cfg.startLabel;
+        state.polling = true;
+        poll();
+      } else {
+        setStage(0);
+      }
+    }
+
+    function succeed() {
+      state.polling = false;
+      clearTimeout(state.timer);
+      restoreButton();
+      if (ensurePanel()) state.panel.remove();
+    }
+
+    function fail(message, onRetry) {
+      state.polling = false;
+      clearTimeout(state.timer);
+      restoreButton();
+      if (!ensurePanel()) return;
+      state.panel.classList.add("is-error");
+      part("spinner").hidden = true;
+      part("stage").textContent = message;
+      const retry = part("retry");
+      retry.hidden = false;
+      retry.onclick = () => { state.panel.classList.remove("is-error"); onRetry(); };
+    }
+
+    return { start, succeed, fail };
+  }
+
+  function runner(buttonId) {
+    if (!runners[buttonId]) runners[buttonId] = createRunner(buttonId);
+    return runners[buttonId];
+  }
+
+  // Results arrive rather than appear: the card fades and lifts into place, then is scrolled to.
+  function revealCard(cardId) {
+    const card = document.getElementById(cardId);
+    if (!card) return;
+    refreshScroll();          // the card's content just changed the page's scrollable height
+    if (!REDUCE_MOTION && typeof gsap !== "undefined") {
+      try {
+        gsap.fromTo(card, { opacity: 0, y: 10 },
+          { opacity: 1, y: 0, duration: 0.42, ease: "power2.out" });
+      } catch (err) { /* fall through to the safety net below regardless */ }
+      // Same guarantee as animateEntrance(): this card just gained the result the doctor asked
+      // for, so it cannot end up permanently invisible -- or stuck fading in slow motion in a
+      // backgrounded tab -- because a tween stalled or is still ticking.
+      setTimeout(() => {
+        if (typeof gsap !== "undefined") gsap.killTweensOf(card);
+        card.style.opacity = ""; card.style.transform = "";
+      }, 900);
+    } else {
+      card.classList.remove("reveal");
+      void card.offsetWidth;
+      card.classList.add("reveal");
+    }
+    smoothScrollTo(card);
+  }
+
+  // ---------- Per-disease rehabilitation exercise plans ----------
+  // The backend already strips Markdown, but the LLM is the kind of component that surprises
+  // you: this is the second layer, so a stray "###" or "**" can never reach a clinician.
+  function stripMarkdown(text) {
+    if (!text) return "";
+    return String(text)
+      .replace(/^\s{0,3}#{1,6}\s*/gm, "")       // ### headings
+      .replace(/\*\*(.+?)\*\*/gs, "$1")          // **bold**
+      .replace(/(?<!\w)__(.+?)__(?!\w)/gs, "$1") // __bold__
+      .replace(/^\s{0,3}[-*+]\s+/gm, "")         // - bullets
+      .replace(/`+/g, "")                        // `code`
+      .replace(/\*/g, "")                        // any stray asterisk
+      .replace(/[ \t]{2,}/g, " ")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+  }
+
+  // ---------- Exercise & Rehabilitation Plan: splitting ONE generated plan into two cards ----------
+  // generate_unified_rehab_plan() (backend) always returns ONE markdown/plain-text blob -- that
+  // generation logic is untouched here. This only re-presents the SAME text the doctor already
+  // saw as one card, into two: what to physically DO (exercise) and why/what-it-means/when-to-
+  // stop (rehabilitation). Nothing is invented -- every word rendered below came from that one
+  // string; a section that cannot be confidently classified just stays with the rest rather than
+  // being dropped.
+  const EXERCISE_SECTION_KEYWORDS = [
+    "exercise", "warm-up", "warmup", "cool-down", "cooldown", "avoid", "activit",
+    "strength", "flexibility", "prescription", "f.i.t.t", "fitt", "frequency", "intensity",
+    "duration", "modality", "type (",
+  ];
+
+  function isExerciseSectionTitle(title) {
+    const t = title.toLowerCase();
+    return EXERCISE_SECTION_KEYWORDS.some(k => t.includes(k));
+  }
+
+  // Splits the plan into {title, body[]} sections. Recognises two heading styles, because the
+  // three prompt templates (clinical F.I.T.T. / detailed patient guide / general summary) don't
+  // all use the same one: a Markdown heading ("#### Warm-up") and a short bold-prefixed line
+  // ("**Recommended Activities:** ..."), the latter used by the general-summary template, which
+  // has no headings below its single title line at all.
+  function parsePlanSections(markdown) {
+    const lines = String(markdown || "").split(/\r?\n/);
+    const headingRe = /^\s{0,3}#{1,6}\s+(.*)$/;
+    const boldLineRe = /^\s{0,3}\*\*(.+?)\*\*:?\s*(.*)$/;
+    const stripEmoji = s => s.replace(/[\u{1F300}-\u{1FAFF}\u{2190}-\u{27BF}️]/gu, "").trim();
+
+    const sections = [];
+    let current = null;
+    let sawFirstHeading = false;
+
+    for (const raw of lines) {
+      const line = raw.trim();
+      const h = line.match(headingRe);
+      if (h) {
+        if (!sawFirstHeading) { sawFirstHeading = true; continue; } // the document's own title line
+        current = { title: stripEmoji(h[1]).replace(/:$/, ""), body: [] };
+        sections.push(current);
+        continue;
+      }
+      const b = line.match(boldLineRe);
+      if (b && b[1].length < 60) {
+        current = { title: stripEmoji(b[1]).replace(/:$/, ""), body: b[2] ? [b[2]] : [] };
+        sections.push(current);
+        continue;
+      }
+      if (!current) {
+        // Preamble before any recognised section (e.g. the clinical template's "Primary Safety
+        // Ceiling:" line pair) -- collected rather than silently dropped.
+        current = { title: "Overview", body: [] };
+        sections.push(current);
+      }
+      if (line) current.body.push(line);
+    }
+    return sections.filter(s => s.body.some(l => l.trim()));
+  }
+
+  function renderPlanSubsections(sections) {
+    return sections.map(s => `
+      <div class="plan-subsection">
+        <div class="plan-subsection-title">${escapeHtml(s.title)}</div>
+        <div class="plan-subsection-body">${mdToHtml(s.body.join("\n"))}</div>
+      </div>`).join("");
+  }
+
+  // Two glass cards when the split gives both something real to show; otherwise ONE card with
+  // the full, unsplit plan -- a lopsided split (e.g. every section reads as "exercise") must
+  // never leave the second card empty.
+  function renderExerciseRehabCards(markdown, isAthlete) {
+    const raw = markdown || "";
+    const sections = parsePlanSections(raw);
+    const exerciseSections = sections.filter(s => isExerciseSectionTitle(s.title));
+    const rehabSections = sections.filter(s => !isExerciseSectionTitle(s.title));
+
+    if (!exerciseSections.length || !rehabSections.length) {
+      return `<div class="plan-two-card-grid plan-two-card-grid-single">
+        <div class="plan-section-card">
+          <div class="psc-head">
+            <span class="psc-icon" aria-hidden="true">🫀</span>
+            <span class="psc-title">Exercise &amp; Rehabilitation Plan</span>
+          </div>
+          <div class="plan-body">${mdToHtml(raw)}</div>
+        </div>
+      </div>`;
+    }
+
+    const athleteIcon = isAthlete ? "🏃" : "🚶";
+    const athleteLabel = isAthlete ? "Athlete-adjusted" : "Standard activity level";
+
+    return `<div class="plan-two-card-grid">
+      <div class="plan-section-card plan-section-exercise">
+        <div class="psc-head">
+          <span class="psc-icon" aria-hidden="true">${athleteIcon}</span>
+          <span class="psc-title">Exercise Recommendation</span>
+          <span class="psc-tag" title="Based on the athlete/sports-screening status on this report">${athleteLabel}</span>
+        </div>
+        ${renderPlanSubsections(exerciseSections)}
+      </div>
+      <div class="plan-section-card plan-section-rehab">
+        <div class="psc-head">
+          <span class="psc-icon" aria-hidden="true">🫀</span>
+          <span class="psc-title">Rehabilitation Plan</span>
+        </div>
+        ${renderPlanSubsections(rehabSections)}
+      </div>
+    </div>`;
+  }
+
+  function planCard(plan) {
+    const raw = plan.rehabilitation_exercise || "";
+    return `
+      <div class="plan-card unified-plan-card">
+        <div class="plan-disease">${escapeHtml(plan.cardiac_disease_name || "")}</div>
+        ${renderExerciseRehabCards(raw, Boolean(report.is_athlete))}
+      </div>`;
+  }
+
+  // §5 -- borderline/sub-disease-threshold parameters. A third output state, distinct from both
+  // the default general guidance and a disease-specific plan: no disease was found, but one or
+  // more values are mildly outside the age/sex-resolved ideal range.
+  function borderlineCard(item) {
+    return `
+      <div class="plan-card borderline-card">
+        <div class="plan-disease">${escapeHtml(item.label || item.field)}</div>
+        <div class="plan-field">
+          <div class="plan-label">Measured value / ideal range</div>
+          <div class="plan-text">${escapeHtml(String(item.value))}${item.normal_range ? ` — normal range ${escapeHtml(item.normal_range)}` : ""}</div>
+        </div>
+        <div class="plan-field">
+          <div class="plan-label">General exercise guidance</div>
+          <div class="plan-text">${escapeHtml(item.guidance || "")}</div>
+        </div>
+      </div>`;
+  }
+
+  // The engine's verdict, read straight from the stored prediction so a reload shows the same
+  // thing a fresh run does.
+  function exerciseSafety() {
+    return (report.predicted_diseases || {}).exercise_safety || null;
+  }
+
+  function exerciseVerdictName() {
+    const v = exerciseSafety();
+    return v ? v.cardiac_disease_name : null;
+  }
+
+  function exerciseIsContraindicated() {
+    return exerciseVerdictName() === "Exercise Contraindicated";
+  }
+
+  const EXERCISE_BLOCKED_MESSAGE =
+    "Exercise is not recommended for this patient based on the findings above. " +
+    "Cardiology clearance required before any activity plan can be generated.";
+
+  // Whether the exercise section has anything to show at all. `exercise_ran` is set by the
+  // click handler so the section stays hidden until the doctor actually asks for it -- the
+  // safety verdict and the sports screening are answers to a question, not page furniture.
+  function renderCarePlans() {
+    const card = document.getElementById("care-plans-card");
+    const body = document.getElementById("care-plans-body");
+    const plans = report.care_plans;
+    const blocked = exerciseIsContraindicated();
+
+    if (!report.exercise_ran && !(plans && plans.length)) {
+      card.style.display = "none";
+      return;
+    }
+    card.style.display = "";
+
+    // The exercise-safety verdict leads, because it governs everything below it. The athlete /
+    // sports screening sits with it: both are exercise guidance, which is why neither appears
+    // in the disease prediction list any more.
+    let html = "";
+    const safety = exerciseSafety();
+    if (safety) html += diseaseCard(safety, { feedback: false });
+    const athlete = (report.predicted_diseases || {}).athlete_screening;
+    if (athlete) html += diseaseCard(athlete, { feedback: false });
+    // §6 -- Athlete's Heart vs HCM gray zone. Requires explicit doctor confirmation, so feedback
+    // (confirm + notes) is left ON here, unlike the two verdict cards above.
+    const grayZone = (report.predicted_diseases || {}).athlete_gray_zone;
+    if (grayZone) html += diseaseCard(grayZone);
+
+    const indeterminate = !blocked && exerciseVerdictName() === "Exercise Safety Indeterminate";
+
+    if (blocked) {
+      // No plan is rendered at all -- not a plan with a warning on top. The backend never
+      // called the LLM either, so there is nothing here to accidentally reveal.
+      html += `<div class="exercise-blocked" role="alert">
+          <div class="eb-title">Exercise plan withheld</div>
+          <div class="eb-body">${escapeHtml(EXERCISE_BLOCKED_MESSAGE)}</div>
+        </div>`;
+    } else if (indeterminate) {
+      html += `<div class="exercise-blocked" role="alert">
+          <div class="eb-title">Exercise plan withheld</div>
+          <div class="eb-body">${escapeHtml(report.care_plans_notice || "")}</div>
+        </div>`;
+    } else if (plans && plans.length) {
+      // §4 -- deterministic reasoning above the per-disease plans when 2+ diseases were predicted,
+      // naming the most restrictive constraint. The plans below still carry full traceability.
+      if (report.combined_guidance) {
+        html += `<div class="combined-guidance" role="note">
+            <div class="cg-title">Combined guidance (multiple findings)</div>
+            <div class="cg-body">${escapeHtml(report.combined_guidance)}</div>
+          </div>`;
+      }
+      html += plans.map(planCard).join("")
+        + `<div class="disclaimer-box">AI-generated guidance for clinician review — not a
+           substitute for individualized medical advice. Confirm before sharing with the patient.</div>`;
+    } else if (report.borderline_guidance && report.borderline_guidance.length) {
+      // §5 -- third output state: no disease, but >=1 parameter is borderline.
+      html += `<div class="plan-notice" role="status">
+          <div class="pn-title">No Disease Detected — Parameter Improvement Guidance</div>
+          <div class="pn-body">${escapeHtml(report.care_plans_notice || "")}</div>
+        </div>`
+        + report.borderline_guidance.map(borderlineCard).join("");
+    } else if (report.care_plans_notice) {
+      // Nothing abnormal was found. Presented as the RESULT it is — no red, no Retry — because
+      // "your patient has no detected disease" is an answer, not a malfunction.
+      html += `<div class="plan-notice" role="status">
+          <div class="pn-title">No Condition-Specific Plan Needed</div>
+          <div class="pn-body">${escapeHtml(report.care_plans_notice)}</div>
+        </div>`;
+      if (report.general_guidance) {
+        html += `<div class="plan-card general-guidance-card">
+            <div class="plan-disease">General Activity Guidance (not condition-specific)</div>
+            <div class="plan-text">${escapeHtml(report.general_guidance)}</div>
+          </div>`;
+      }
+    }
+
+    body.innerHTML = html;
+  }
+
+  async function runCarePlans() {
+    const run = runner("care-plans-btn");
+    run.start();
+    try {
+      const res = await API.request(`/api/reports/${reportUid}/care-plans`, { method: "POST" });
+      report.care_plans = res.care_plans;
+      report.care_plans_notice = res.notice || null;
+      report.combined_guidance = res.combined_guidance || null;
+      report.borderline_guidance = res.borderline_guidance || null;
+      report.general_guidance = res.general_guidance || null;
+      if (report.predicted_diseases) {
+        report.predicted_diseases.athlete_gray_zone = res.athlete_gray_zone || null;
+      }
+      report.exercise_ran = true;
+      renderCarePlans();
+      run.succeed();
+      revealCard("care-plans-card");
+      showToast(res.exercise_blocked
+        ? "Exercise is contraindicated — no plan was generated."
+        : res.notice && !res.care_plans.length
+        ? res.notice
+        : `Generated ${res.care_plans.length} exercise plan(s).`);
+    } catch (err) {
+      run.fail(err.message, runCarePlans);
+      showToast(err.message);
+    }
+  }
+
+  // Legacy combined plan. Exercise only -- the Diet Plan column is gone, so the single
+  // remaining card takes the full width the two used to share.
+  function renderCarePlan() {
+    const card = document.getElementById("care-plan-card");
+    const body = document.getElementById("care-plan-body");
+    const blocked = exerciseIsContraindicated() && report.combined_ran;
+
+    if (!report.rehab_plan && !report.recommendation_error && !blocked) {
+      card.style.display = "none";
+      return;
+    }
+    card.style.display = "block";
+
+    if (report.recommendation_error) {
+      body.innerHTML = `<div class="disclaimer-box">Could not generate a care plan: ${escapeHtml(report.recommendation_error)}</div>`;
+      return;
+    }
+
+    if (blocked) {
+      body.innerHTML = `<div class="exercise-blocked" role="alert">
+          <div class="eb-title">Exercise plan withheld</div>
+          <div class="eb-body">${escapeHtml(EXERCISE_BLOCKED_MESSAGE)}</div>
+        </div>`;
+      return;
+    }
+
+    body.innerHTML = `
+      ${renderExerciseRehabCards(report.rehab_plan, Boolean(report.is_athlete))}
+      <div class="disclaimer-box">AI-generated guidance for clinician review — not a substitute for individualized medical advice. Confirm before sharing with the patient.</div>
+    `;
+  }
+
+  // "Predict Disease" loading state: a scanning ring + staged process text/percentage.
+  // Deliberately NOT wired to a server-reported count -- the rule engine is a single synchronous
+  // POST with nothing to poll -- so this caps at 92% ("almost there") until the real request
+  // resolves, then jumps to 100%, rather than ever claiming a completion the network hasn't
+  // confirmed yet. Purely presentational: it never reads or writes prediction state itself.
+  const PREDICT_STAGES = [
+    { label: "Reading extracted parameters…", pct: 18 },
+    { label: "Applying age & sex-adjusted thresholds…", pct: 42 },
+    { label: "Cross-checking exercise-safety rules…", pct: 68 },
+    { label: "Compiling prediction results…", pct: 92 },
+  ];
+
+  function startPredictProgress() {
+    const panel = document.getElementById("predict-run-panel");
+    const stageEl = document.getElementById("predict-stage");
+    const pctEl = document.getElementById("predict-percent");
+    if (!panel || !stageEl || !pctEl) return { finish() {}, stop() {} };
+
+    panel.hidden = false;
+    panel.classList.remove("is-done");
+    let i = 0, timer = null;
+
+    function paint() {
+      const s = PREDICT_STAGES[i];
+      stageEl.textContent = s.label;
+      pctEl.textContent = `${s.pct}%`;
+      if (i < PREDICT_STAGES.length - 1) {
+        i++;
+        timer = setTimeout(paint, 380);
+      }
+    }
+    paint();
+
+    return {
+      finish() {
+        clearTimeout(timer);
+        stageEl.textContent = "Prediction complete";
+        pctEl.textContent = "100%";
+        panel.classList.add("is-done");
+        setTimeout(() => { panel.hidden = true; panel.classList.remove("is-done"); }, 500);
+      },
+      stop() {
+        clearTimeout(timer);
+        panel.hidden = true;
+        panel.classList.remove("is-done");
+      },
+    };
+  }
+
+  async function runPrediction() {
+    const btn = document.getElementById("predict-btn");
+    btn.disabled = true;
+    const original = btn.textContent;
+    btn.textContent = "Running Prediction Engine…";
+    const progress = startPredictProgress();
+    try {
+      const pred = await API.request(`/api/reports/${reportUid}/predict`, { method: "POST" });
+      report.predicted_diseases = pred;
+      report.risk_level = pred.risk_level;
+      report.rules_evaluated = pred.rules_evaluated;
+      report.prediction_generated_at = pred.generated_at;
+      report.rehab_plan = null;
+      report.care_plans = null;
+      report.recommendation_error = null;
+      // A new prediction invalidates the exercise results too -- the safety verdict may have
+      // flipped, so the section hides until it is asked for again.
+      report.exercise_ran = false;
+      report.combined_ran = false;
+      const fresh = await API.request(`/api/reports/${reportUid}`);
+      confirmations = {};
+      for (const c of (fresh.confirmations || [])) confirmations[c.disease_name] = c;
+      renderPrediction();
+      renderCarePlans();
+      renderCarePlan();
+      refreshScroll();
+      smoothScrollTo(document.getElementById("prediction-card"));
+      progress.finish();
+      showToast("Prediction complete.");
+    } catch (err) {
+      progress.stop();
+      showToast(err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = original;
+    }
+  }
+
+  async function runRecommend() {
+    const run = runner("recommend-btn");
+    run.start();
+    try {
+      const rec = await API.request(`/api/reports/${reportUid}/recommend`, { method: "POST" });
+      report.rehab_plan = rec.rehab_plan;
+      report.recommendation_error = null;
+      report.combined_ran = true;
+      renderCarePlan();
+      run.succeed();
+      revealCard("care-plan-card");
+      showToast(rec.exercise_blocked
+        ? "Exercise is contraindicated — no plan was generated."
+        : "Exercise plan generated.");
+    } catch (err) {
+      report.recommendation_error = err.message;
+      renderCarePlan();
+      run.fail(err.message, runRecommend);
+      showToast(err.message);
+    }
+  }
+
+  document.getElementById("predict-btn").addEventListener("click", runPrediction);
+
+  async function confirmField(field) {
+    if (INDEXED_FIELDS.includes(field)) {
+      const bsaInp = document.getElementById("bsa-input");
+      const bsaVal = bsaInp ? bsaInp.value.trim() : "";
+      if (!bsaVal) {
+        showToast(`Cannot confirm ${FIELD_LABELS[field] || field}: Requires manual BSA entry.`);
+        return;
+      }
+    }
+    const input = document.querySelector(`input[data-field="${field}"]`);
+    try {
+      report = await API.request(`/api/reports/${reportUid}`, {
+        method: "PUT",
+        json: { parameters: { [field]: input.value }, confirmed_fields: [field] },
+      });
+      showToast(`${FIELD_LABELS[field] || field} confirmed.`);
+      render();
+    } catch (err) {
+      showToast(err.message);
+    }
+  }
+
+  document.getElementById("save-btn").addEventListener("click", async () => {
+    // Blocked before anything is sent: an incomplete compulsory group is the one gap the
+    // prediction engine cannot work around.
+    const missing = validateCompulsory();
+    if (missing.length) {
+      document.getElementById("save-status").textContent =
+        `Not saved — ${missing.length} compulsory group(s) empty.`;
+      showToast(`Fill the highlighted group(s) first: ${missing.join(", ")}.`);
+      return;
+    }
+
+    const parameters = {};
+    // Every rendered parameter input, whatever section it ended up in.
+    document.querySelectorAll("#bsa-section input[data-field], #compulsory-section input[data-field], #param-sections input[data-field]")
+      .forEach(inp => { parameters[inp.dataset.field] = inp.value; });
+
+    // Provenance only for fields that actually carry a value: a dropdown touched and then
+    // emptied has nothing to record, and sending it would tag a blank field as doctor-entered.
+    const sources = {};
+    for (const [field, src] of Object.entries(parameterSources)) {
+      if ((parameters[field] || "").trim() !== "") sources[field] = src;
+    }
+
+    try {
+      report = await API.request(`/api/reports/${reportUid}`, {
+        method: "PUT",
+        json: {
+          parameters,
+          extra_findings: document.getElementById("extra-findings").value,
+          parameter_sources: sources,
+        },
+      });
+      parameterSources = {};             // now recorded server-side in extraction_meta
+      document.getElementById("save-status").textContent = "Saved just now.";
+      showToast("Report saved.");
+      render();
+    } catch (err) {
+      showToast(err.message);
+    }
+  });
+
+  async function load() {
+    try {
+      // Section layout first -- render() needs it, and it comes from parameter_dict.py.
+      const meta = await API.request("/api/reports/meta/sections");
+      SECTIONS = meta.sections;
+      FIELD_LABELS = meta.labels;
+      if (meta.dropdowns) DROPDOWNS = meta.dropdowns;
+
+      report = await API.request(`/api/reports/${reportUid}`);
+      // Physician feedback rides along on the report payload, so the cards render already
+      // showing what was previously confirmed rather than flashing an unconfirmed state.
+      confirmations = {};
+      for (const c of (report.confirmations || [])) confirmations[c.disease_name] = c;
+      if (report.status === "uploaded" || report.status === "processing") {
+        window.location.href = `/processing/${reportUid}`;
+        return;
+      }
+      render();
+      animateEntrance();
+    } catch (err) {
+      document.getElementById("patient-name").textContent = "Could not load report";
+      document.getElementById("report-sub").textContent = err.message;
+    }
+  }
+  load();
+</script>
+</body>
+</html>

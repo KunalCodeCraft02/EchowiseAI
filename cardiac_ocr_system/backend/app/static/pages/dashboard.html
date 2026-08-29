@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard · Cardiac OCR System</title>
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="app-shell">
+  <div class="topbar">
+    <div class="brand">
+      <span class="logo-heart" aria-hidden="true">
+        <svg viewBox="0 0 40 40" width="30" height="30">
+          <defs>
+            <linearGradient id="lhGrad1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#2A52BE"/><stop offset="100%" stop-color="#00C9A7"/>
+            </linearGradient>
+            <clipPath id="lhClip1"><path d="M20 34 C10 26 3 19 3 12.5 C3 6.5 7.5 3 12.5 3 C16 3 19 5 20 8 C21 5 24 3 27.5 3 C32.5 3 37 6.5 37 12.5 C37 19 30 26 20 34 Z"/></clipPath>
+          </defs>
+          <path class="lh-shape" d="M20 34 C10 26 3 19 3 12.5 C3 6.5 7.5 3 12.5 3 C16 3 19 5 20 8 C21 5 24 3 27.5 3 C32.5 3 37 6.5 37 12.5 C37 19 30 26 20 34 Z" fill="url(#lhGrad1)"/>
+          <g clip-path="url(#lhClip1)"><rect class="lh-scan" x="-6" y="0" width="7" height="40" fill="rgba(255,255,255,0.9)"/></g>
+          <path class="lh-wave" d="M5,20 L12,20 L15,12 L19,28 L22,9 L25,20 L35,20" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span class="brand-name">EchoWise AI</span>
+    </div>
+    <button class="nav-toggle" id="nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav id="topbar-nav">
+      <a href="/#features">Features</a>
+      <a href="/dashboard" class="nav-auth-only">Previous Records</a>
+      <a href="/login" class="nav-guest-only">Doctor Login / Sign Up</a>
+      <span class="doc-chip nav-auth-only">
+        <span class="doc-avatar" id="doc-avatar" aria-hidden="true"></span>
+        <span class="doc-name" id="doc-name"></span>
+      </span>
+      <button id="logout-btn" class="nav-auth-only" type="button">Logout</button>
+    </nav>
+  </div>
+
+  <div class="page-wrap">
+    <div class="page-head">
+      <div>
+        <h1>Patient Reports</h1>
+        <div class="sub">All 2D Echo reports you've uploaded, with live extraction status.</div>
+      </div>
+      <a href="/upload" class="btn btn-primary" style="width:auto;">+ Upload New Report</a>
+    </div>
+
+    <div class="records-filter-bar">
+      <div class="field">
+        <label for="filter-sort">Sort</label>
+        <select id="filter-sort">
+          <option value="newest">Newest to Oldest (Default)</option>
+          <option value="oldest">Oldest to Newest</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="filter-gender">Filter by Gender</label>
+        <select id="filter-gender">
+          <option value="">All Genders</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="filter-severity">Filter by Highest Severity Level</label>
+        <select id="filter-severity">
+          <option value="">All Severities</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+          <option value="none">No Disease Detected</option>
+          <option value="pending">Not Yet Evaluated</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="records-wrap"></div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-grid">
+        <div class="footer-col footer-brand-col">
+          <div class="footer-brand">
+            <span class="logo-heart" aria-hidden="true">
+              <svg viewBox="0 0 40 40" width="24" height="24">
+                <defs>
+                  <linearGradient id="lhGrad2" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#2A52BE"/><stop offset="100%" stop-color="#00C9A7"/>
+                  </linearGradient>
+                  <clipPath id="lhClip2"><path d="M20 34 C10 26 3 19 3 12.5 C3 6.5 7.5 3 12.5 3 C16 3 19 5 20 8 C21 5 24 3 27.5 3 C32.5 3 37 6.5 37 12.5 C37 19 30 26 20 34 Z"/></clipPath>
+                </defs>
+                <path class="lh-shape" d="M20 34 C10 26 3 19 3 12.5 C3 6.5 7.5 3 12.5 3 C16 3 19 5 20 8 C21 5 24 3 27.5 3 C32.5 3 37 6.5 37 12.5 C37 19 30 26 20 34 Z" fill="url(#lhGrad2)"/>
+                <g clip-path="url(#lhClip2)"><rect class="lh-scan" x="-6" y="0" width="7" height="40" fill="rgba(255,255,255,0.9)"/></g>
+                <path class="lh-wave" d="M5,20 L12,20 L15,12 L19,28 L22,9 L25,20 L35,20" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span class="brand-name">EchoWise AI</span>
+          </div>
+          <div class="foot-line">ADT Baramati</div>
+          <div class="foot-line"><a href="mailto:adtbaramatiresearch@gmail.com">adtbaramatiresearch@gmail.com</a></div>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <div class="footer-social">
+            <a href="#" aria-label="LinkedIn" title="LinkedIn">in</a>
+            <a href="#" aria-label="X (Twitter)" title="X (Twitter)">X</a>
+            <a href="#" aria-label="Instagram" title="Instagram">IG</a>
+            <a href="#" aria-label="YouTube" title="YouTube">YT</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; <span id="foot-year"></span> All Rights reserved.</span>
+        <span>Engineered by Research Interns in ADT Baramati</span>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script src="/static/js/common.js"></script>
+<script>
+  API.requireAuth();
+  initTopbar();
+  initFooter();
+
+  const badgeLabel = {
+    uploaded: "Queued", processing: "Processing", extracted: "Extracted",
+    reviewed: "Reviewed", failed: "Failed",
+  };
+
+  function fmtDate(iso) {
+    if (!iso) return "-";
+    const d = new Date(iso);
+    return d.toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" }) +
+      " · " + d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function escapeHtml(s) {
+    return (s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  // A FAILED report goes back to the processing page, not the Parameters Extraction page: that
+  // page would render every parameter as "Not detected", which reads as "this study contains none
+  // of these values" rather than "extraction never succeeded". The processing page shows the
+  // failure dialog with the actual reason and the way out of it. Same routing "View Full Report"
+  // uses to reopen a patient's historical extracted values.
+  const rowHref = r =>
+    ["uploaded", "processing", "failed"].includes(r.status)
+      ? `/processing/${r.report_uid}` : `/report/${r.report_uid}`;
+
+  // Dynamic severity tiering (§ Disease Prediction Results) reused here so a card's tags and the
+  // "Highest Severity Level" filter agree with the colour a doctor already sees on the report
+  // page itself: >70% severity_score is high (coral/red), 40-70% medium (amber/orange), <40% low
+  // (green/teal). Falls back to prediction_score then confidence_score when severity_score is
+  // absent, exactly like the report page's per-card tiering.
+  function scoreTier(pct) {
+    if (pct == null) return null;
+    if (pct > 70) return "high";
+    if (pct >= 40) return "medium";
+    return "low";
+  }
+
+  function diseaseScore(d) {
+    return d.severity_score != null ? d.severity_score
+         : d.prediction_score != null ? d.prediction_score
+         : d.confidence_score;
+  }
+
+  function primaryDiseases(r) {
+    return ((r.predicted_diseases || {}).diseases || []).slice(0, 3);
+  }
+
+  // "pending"  -- prediction never run yet (predicted_diseases is null/absent).
+  // "none"     -- prediction ran, found nothing (a real, good result -- distinct from "pending").
+  // high/medium/low -- the strongest scored finding on the report.
+  function highestSeverityTier(r) {
+    if (!r.predicted_diseases) return "pending";
+    const diseases = r.predicted_diseases.diseases || [];
+    if (!diseases.length) return "none";
+    let best = null, bestScore = -1;
+    for (const d of diseases) {
+      const score = diseaseScore(d);
+      if (score != null && score > bestScore) { bestScore = score; best = scoreTier(score); }
+    }
+    return best || "low";
+  }
+
+  function diseaseTagsHtml(r) {
+    if (!r.predicted_diseases) {
+      return `<span class="rc-tag rc-tag-pending">Not yet evaluated</span>`;
+    }
+    const diseases = primaryDiseases(r);
+    if (!diseases.length) {
+      return `<span class="rc-tag rc-tag-low">No disease detected</span>`;
+    }
+    return diseases.map(d => {
+      const tier = scoreTier(diseaseScore(d)) || "medium";
+      const name = d.cardiac_disease_name || d.name || "Unnamed finding";
+      return `<span class="rc-tag rc-tag-${tier}" title="${escapeHtml(name)}">${escapeHtml(name)}</span>`;
+    }).join("");
+  }
+
+  function recordCard(r) {
+    const evaluatedAt = r.prediction_generated_at || r.created_at;
+    const evaluatedLabel = r.prediction_generated_at ? "Evaluated" : "Uploaded";
+    return `
+      <a class="record-card" href="${rowHref(r)}">
+        <div class="rc-head">
+          <div class="rc-name">${escapeHtml(r.patient_name)}</div>
+          <span class="badge badge-${r.status}">${badgeLabel[r.status] || r.status}</span>
+        </div>
+        <div class="rc-meta">
+          <span class="rc-meta-item">🗓️ ${evaluatedLabel}: ${fmtDate(evaluatedAt)}</span>
+          <span class="rc-meta-item">${escapeHtml(r.patient_gender || "Gender —")} · ${escapeHtml(r.patient_age || "Age —")}</span>
+        </div>
+        <div class="rc-tags">${diseaseTagsHtml(r)}</div>
+        <span class="btn btn-ghost btn-sm rc-view-btn">View Full Report</span>
+      </a>`;
+  }
+
+  // All state kept in memory from the ONE fetch below -- sort/gender/severity filters below only
+  // ever re-render this same array, never re-request it.
+  let allReports = [];
+
+  function applyFiltersAndRender() {
+    const wrap = document.getElementById("records-wrap");
+    const sort = document.getElementById("filter-sort").value;
+    const genderFilter = document.getElementById("filter-gender").value;
+    const severityFilter = document.getElementById("filter-severity").value;
+
+    let list = allReports.filter(r =>
+      (!genderFilter || r.patient_gender === genderFilter) &&
+      (!severityFilter || highestSeverityTier(r) === severityFilter)
+    );
+
+    const dateOf = r => new Date(r.prediction_generated_at || r.created_at || 0).getTime();
+    list = list.slice().sort((a, b) => sort === "oldest" ? dateOf(a) - dateOf(b) : dateOf(b) - dateOf(a));
+
+    if (!list.length) {
+      wrap.innerHTML = allReports.length
+        ? `<div class="empty-state">
+            <div class="icon">🔎</div>
+            <div style="font-weight:600; color:var(--teal-950); margin-bottom:6px;">No reports match these filters</div>
+            <div>Try a different gender or severity filter.</div>
+          </div>`
+        : `<div class="empty-state">
+            <div class="icon">🫀</div>
+            <div style="font-weight:600; color:var(--teal-950); margin-bottom:6px;">No reports yet</div>
+            <div>Upload your first 2D Echo report to begin extraction.</div>
+            <a href="/upload" class="btn btn-primary" style="width:auto; margin-top:18px; display:inline-flex;">+ Upload New Report</a>
+          </div>`;
+      return;
+    }
+
+    wrap.innerHTML = `<div class="records-grid">${list.map(recordCard).join("")}</div>`;
+  }
+
+  async function load() {
+    const wrap = document.getElementById("records-wrap");
+    try {
+      allReports = await API.request("/api/reports");
+      applyFiltersAndRender();
+    } catch (err) {
+      wrap.innerHTML = `<div class="empty-state">${err.message}</div>`;
+    }
+  }
+
+  document.getElementById("filter-sort").addEventListener("change", applyFiltersAndRender);
+  document.getElementById("filter-gender").addEventListener("change", applyFiltersAndRender);
+  document.getElementById("filter-severity").addEventListener("change", applyFiltersAndRender);
+
+  load();
+</script>
+</body>
+</html>

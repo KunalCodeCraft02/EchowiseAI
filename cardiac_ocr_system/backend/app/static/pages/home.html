@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EchoWise AI · Cardiac OCR System</title>
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">
+    <span class="logo-heart" aria-hidden="true">
+      <svg viewBox="0 0 40 40" width="30" height="30">
+        <defs>
+          <linearGradient id="lhGrad1" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#2A52BE"/><stop offset="100%" stop-color="#00C9A7"/>
+          </linearGradient>
+          <clipPath id="lhClip1"><path d="M20 34 C10 26 3 19 3 12.5 C3 6.5 7.5 3 12.5 3 C16 3 19 5 20 8 C21 5 24 3 27.5 3 C32.5 3 37 6.5 37 12.5 C37 19 30 26 20 34 Z"/></clipPath>
+        </defs>
+        <path class="lh-shape" d="M20 34 C10 26 3 19 3 12.5 C3 6.5 7.5 3 12.5 3 C16 3 19 5 20 8 C21 5 24 3 27.5 3 C32.5 3 37 6.5 37 12.5 C37 19 30 26 20 34 Z" fill="url(#lhGrad1)"/>
+        <g clip-path="url(#lhClip1)"><rect class="lh-scan" x="-6" y="0" width="7" height="40" fill="rgba(255,255,255,0.9)"/></g>
+        <path class="lh-wave" d="M5,20 L12,20 L15,12 L19,28 L22,9 L25,20 L35,20" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
+    <span class="brand-name">EchoWise AI</span>
+  </div>
+  <button class="nav-toggle" id="nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <nav id="topbar-nav">
+    <a href="#features">Features</a>
+    <a href="/dashboard" class="nav-auth-only">Previous Records</a>
+    <a href="/login" class="nav-guest-only">Doctor Login / Sign Up</a>
+    <span class="doc-chip nav-auth-only">
+      <span class="doc-avatar" id="doc-avatar" aria-hidden="true"></span>
+      <span class="doc-name" id="doc-name"></span>
+    </span>
+    <button id="logout-btn" class="nav-auth-only" type="button">Logout</button>
+  </nav>
+</div>
+
+<section class="hero-shell">
+  <div class="hero-left reveal-up">
+    <div class="hero-badge-pill"><span class="pill-dot" aria-hidden="true"></span>Next-Gen Cardiac Diagnostics &amp; Rehab AI</div>
+    <h1 class="hero-headline">Precision 2D Echo Analysis Powered by <span class="accent">Rule-Based Intelligence</span>.</h1>
+    <ul class="hero-bullets">
+      <li>
+        <span class="hb-icon" aria-hidden="true">🔎</span>
+        <span><strong>Automated 51-Parameter OCR Extraction:</strong> Instantly captures clinical metrics from scanned images &amp; PDF reports.</span>
+      </li>
+      <li>
+        <span class="hb-icon" aria-hidden="true">🧠</span>
+        <span><strong>20-Rule Clinical Decision Matrix:</strong> Stratifies disease risks and severity with zero manual entry delay.</span>
+      </li>
+      <li>
+        <span class="hb-icon" aria-hidden="true">🏃</span>
+        <span><strong>Holistic Rehabilitation Engine:</strong> Generates tailored exercise routines and cardiac nutrition plans.</span>
+      </li>
+      <li>
+        <span class="hb-icon" aria-hidden="true">🎯</span>
+        <span><strong>Athlete-Specific Calibration:</strong> Dynamically adapts recovery targets based on physiological activity profiles.</span>
+      </li>
+    </ul>
+    <div class="hero-cta-row2">
+      <button type="button" class="hero-cta-btn" id="hero-cta-btn">
+        Start OCR Extraction
+        <span class="cta-arrow" aria-hidden="true">&rarr;</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="hero-right reveal-up" style="transition-delay:0.15s;">
+    <div class="heart-glow-backdrop" aria-hidden="true"></div>
+    <div class="sketchfab-container">
+      <iframe title="Cutted_Heart_Simulation" frameborder="0" allowfullscreen
+        allow="autoplay; fullscreen; xr-spatial-tracking; execution-while-out-of-viewport; execution-while-not-rendered"
+        src="https://sketchfab.com/models/0acf946a98ca40908f40cc3c402f1bc7/embed?autostart=1&transparent=1&ui_infos=0&ui_watermark=0&ui_controls=0&ui_inspector=0&ui_stop=0"
+        loading="lazy"></iframe>
+    </div>
+    <div class="heart-badges-overlay" aria-hidden="true">
+      <div class="heart-badge hb-top-left"><span class="hb-status hb-green"></span>LVEF (Ejection Fraction)</div>
+      <div class="heart-badge hb-top-right"><span class="hb-status hb-blue"></span>Aortic Root Dimension</div>
+      <div class="heart-badge hb-bottom-left">Mitral Valve Velocity</div>
+      <div class="heart-badge hb-bottom-right">Interventricular Septum</div>
+    </div>
+    <div class="heart-drag-hint">🖱️ Click &amp; Drag to Rotate 360&deg;</div>
+  </div>
+</section>
+
+<section class="features-section">
+  <div class="features-heading reveal-up" id="features">
+    <h2>Everything a cardiologist needs, in one read</h2>
+    <div class="sub">From a scanned report to a reviewed, risk-scored patient record.</div>
+  </div>
+  <div class="features-row">
+    <div class="feature-card reveal-up">
+      <div class="fc-icon" aria-hidden="true">🔎</div>
+      <h3>Automated OCR Extraction</h3>
+      <p>Fast extraction of 51 parameters from blurred images or PDF reports via Paddle OCR — zero manual entry errors.</p>
+    </div>
+    <div class="feature-card reveal-up" style="transition-delay:0.08s;">
+      <div class="fc-icon" aria-hidden="true">🧠</div>
+      <h3>20-Rule Clinical Intelligence</h3>
+      <p>Multi-parameter correlation engine detecting subtle heart anomalies and disease risks instantly.</p>
+    </div>
+    <div class="feature-card reveal-up" style="transition-delay:0.16s;">
+      <div class="fc-icon" aria-hidden="true">📊</div>
+      <h3>Severity &amp; Risk Scoring</h3>
+      <p>Granular confidence and severity stratification (Low, Medium, High) with visual indicators.</p>
+    </div>
+  </div>
+  <div class="features-row">
+    <div class="feature-card reveal-up">
+      <div class="fc-icon" aria-hidden="true">🏃</div>
+      <h3>Adaptive Exercise Regimens</h3>
+      <p>Tailored physical rehabilitation calibrated for athletes vs. non-athletes.</p>
+    </div>
+    <div class="feature-card reveal-up" style="transition-delay:0.08s;">
+      <div class="fc-icon" aria-hidden="true">🥗</div>
+      <h3>Cardiac Nutrition &amp; Diet</h3>
+      <p>Evidence-based dietary recommendations targeting specific diagnostic indicators.</p>
+    </div>
+  </div>
+</section>
+
+<section class="pipeline-section">
+  <div class="pipeline-heading reveal-up">
+    <h2>From scan to structured, risk-scored record</h2>
+    <div class="sub">One continuous clinical pipeline — no manual re-entry at any stage.</div>
+  </div>
+  <div class="pipeline-track">
+    <div class="pipeline-step reveal-up">
+      <div class="ps-num">01</div>
+      <div class="ps-card">
+        <h3>Upload &amp; Paddle OCR</h3>
+        <p>Drag-and-drop a 2D Echo report; the system auto-fetches 51 parameters with noise filtering.</p>
+      </div>
+    </div>
+    <div class="pipeline-connector" aria-hidden="true"></div>
+    <div class="pipeline-step reveal-up" style="transition-delay:0.12s;">
+      <div class="ps-num">02</div>
+      <div class="ps-card">
+        <h3>20-Rule Clinical Evaluation</h3>
+        <p>Automated diagnostic validation and multi-parameter disease risk prediction.</p>
+      </div>
+    </div>
+    <div class="pipeline-connector" aria-hidden="true"></div>
+    <div class="pipeline-step reveal-up" style="transition-delay:0.24s;">
+      <div class="ps-num">03</div>
+      <div class="ps-card">
+        <h3>Rehab &amp; Recovery Protocol</h3>
+        <p>Instant personalized diet regimen, physical activity plan, and downloadable report.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-col footer-brand-col">
+        <div class="footer-brand">
+          <span class="logo-heart" aria-hidden="true">
+            <svg viewBox="0 0 40 40" width="24" height="24">
+              <defs>
+                <linearGradient id="lhGrad2" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#2A52BE"/><stop offset="100%" stop-color="#00C9A7"/>
+                </linearGradient>
+                <clipPath id="lhClip2"><path d="M20 34 C10 26 3 19 3 12.5 C3 6.5 7.5 3 12.5 3 C16 3 19 5 20 8 C21 5 24 3 27.5 3 C32.5 3 37 6.5 37 12.5 C37 19 30 26 20 34 Z"/></clipPath>
+              </defs>
+              <path class="lh-shape" d="M20 34 C10 26 3 19 3 12.5 C3 6.5 7.5 3 12.5 3 C16 3 19 5 20 8 C21 5 24 3 27.5 3 C32.5 3 37 6.5 37 12.5 C37 19 30 26 20 34 Z" fill="url(#lhGrad2)"/>
+              <g clip-path="url(#lhClip2)"><rect class="lh-scan" x="-6" y="0" width="7" height="40" fill="rgba(255,255,255,0.9)"/></g>
+              <path class="lh-wave" d="M5,20 L12,20 L15,12 L19,28 L22,9 L25,20 L35,20" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="brand-name">EchoWise AI</span>
+        </div>
+        <div class="foot-line">ADT Baramati</div>
+        <div class="foot-line"><a href="mailto:adtbaramatiresearch@gmail.com">adtbaramatiresearch@gmail.com</a></div>
+      </div>
+      <div class="footer-col">
+        <h4>Connect</h4>
+        <div class="footer-social">
+          <a href="#" aria-label="LinkedIn" title="LinkedIn">in</a>
+          <a href="#" aria-label="X (Twitter)" title="X (Twitter)">X</a>
+          <a href="#" aria-label="Instagram" title="Instagram">IG</a>
+          <a href="#" aria-label="YouTube" title="YouTube">YT</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <span id="foot-year"></span> All Rights reserved.</span>
+      <span>Engineered by Research Interns in ADT Baramati</span>
+    </div>
+  </div>
+</footer>
+
+<script src="/static/js/common.js"></script>
+<script>
+  initTopbar();
+  initFooter();
+  initScrollReveal();
+
+  const heroCta = document.getElementById("hero-cta-btn");
+  if (heroCta) heroCta.addEventListener("click", () => {
+    window.location.href = API.token() ? "/upload" : "/login";
+  });
+</script>
+</body>
+</html>

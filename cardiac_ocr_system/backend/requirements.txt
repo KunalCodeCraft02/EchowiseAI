@@ -1,0 +1,53 @@
+fastapi==0.111.0
+uvicorn[standard]==0.30.1
+python-multipart==0.0.9
+pydantic[email]==2.7.4
+SQLAlchemy==2.0.30
+PyJWT==2.8.0
+httpx==0.28.1
+python-dotenv==1.2.2
+
+# Disease prediction engine + Groq LLM rehab/diet plan generation
+# (httpx above is also used for the Groq API call)
+
+# OCR / preprocessing
+opencv-python-headless==4.10.0.82
+numpy==1.26.4
+Pillow==10.3.0
+pytesseract==0.3.10
+PyMuPDF==1.24.5
+pdfplumber==0.11.1
+
+# --- Extraction engines -----------------------------------------------------
+# PRIMARY: Groq vision (app/ocr/groq_extractor.py) reads the report image and returns
+# label/value pairs. It needs NO extra package -- it calls the Groq REST API via httpx (above),
+# deliberately avoiding an SDK so no new dependency can re-introduce a version conflict.
+# Configure GROQ_API_KEY / GROQ_VISION_MODEL in backend/.env.
+#
+# SECOND READER: PaddleOCR independently re-reads the same image so every Groq value can be
+# corroborated (app/ocr/cross_validation.py). This is what supplies REAL confidence scores --
+# a vision LLM returns none, and fabricating them is not acceptable for clinical data.
+paddleocr==2.7.3
+paddlepaddle==2.6.2
+
+# !! DO NOT UNPIN protobuf !!
+# paddlepaddle 2.6.2 requires protobuf<=3.20.2 on Windows. Left unpinned, a later
+# `pip install -r requirements.txt` resolves protobuf upward and breaks PaddleOCR with
+# "Descriptors cannot be created directly" at import time.
+protobuf==3.20.2
+
+# LAST RESORT: Tesseract (via pytesseract above) runs only if PaddleOCR is unavailable. It
+# needs the system binary installed separately (see README section 2), set via TESSERACT_CMD.
+# Measured far weaker than PaddleOCR on dense report tables.
+#
+# ARCHIVED: google-cloud-documentai is intentionally NOT installed. It requires protobuf>=4.25
+# and therefore CANNOT coexist with paddlepaddle -- installing it breaks PaddleOCR and vice
+# versa. app/ocr/document_ai_extractor.py is kept but dormant (lazy imports) so the integration
+# can be revived on a billing-enabled GCP project.
+# google-cloud-documentai>=3.15.0,<4.0.0
+
+# NLP for free-text clinical findings (optional, used for future disease/exercise modules)
+spacy==3.7.5
+
+# Testing
+pytest>=8.0.0

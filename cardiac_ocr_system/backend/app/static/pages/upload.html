@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upload Report · Cardiac OCR System</title>
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="app-shell">
+  <div class="topbar">
+    <div class="brand">
+      <span class="logo-heart" aria-hidden="true">
+        <svg viewBox="0 0 40 40" width="30" height="30">
+          <defs>
+            <linearGradient id="lhGrad1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#2A52BE"/><stop offset="100%" stop-color="#00C9A7"/>
+            </linearGradient>
+            <clipPath id="lhClip1"><path d="M20 34 C10 26 3 19 3 12.5 C3 6.5 7.5 3 12.5 3 C16 3 19 5 20 8 C21 5 24 3 27.5 3 C32.5 3 37 6.5 37 12.5 C37 19 30 26 20 34 Z"/></clipPath>
+          </defs>
+          <path class="lh-shape" d="M20 34 C10 26 3 19 3 12.5 C3 6.5 7.5 3 12.5 3 C16 3 19 5 20 8 C21 5 24 3 27.5 3 C32.5 3 37 6.5 37 12.5 C37 19 30 26 20 34 Z" fill="url(#lhGrad1)"/>
+          <g clip-path="url(#lhClip1)"><rect class="lh-scan" x="-6" y="0" width="7" height="40" fill="rgba(255,255,255,0.9)"/></g>
+          <path class="lh-wave" d="M5,20 L12,20 L15,12 L19,28 L22,9 L25,20 L35,20" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span class="brand-name">EchoWise AI</span>
+    </div>
+    <button class="nav-toggle" id="nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav id="topbar-nav">
+      <a href="/#features">Features</a>
+      <a href="/dashboard" class="nav-auth-only">Previous Records</a>
+      <a href="/login" class="nav-guest-only">Doctor Login / Sign Up</a>
+      <span class="doc-chip nav-auth-only">
+        <span class="doc-avatar" id="doc-avatar" aria-hidden="true"></span>
+        <span class="doc-name" id="doc-name"></span>
+      </span>
+      <button id="logout-btn" class="nav-auth-only" type="button">Logout</button>
+    </nav>
+  </div>
+
+  <div class="page-wrap" style="max-width:760px;">
+    <div class="page-head">
+      <div>
+        <h1>Upload 2D Echo Report</h1>
+        <div class="sub">Accepts scanned or digital PDFs, and photographed or scanned images.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="error-msg" id="error-box"></div>
+      <form id="upload-form">
+        <div class="section-title" style="margin-top:0;">Patient Details</div>
+        <div class="upload-grid">
+          <div class="field">
+            <label for="patient_name">Patient name</label>
+            <input type="text" id="patient_name" required placeholder="e.g. Rohan Deshmukh">
+          </div>
+          <div class="field">
+            <label for="patient_age">Age</label>
+            <input type="text" id="patient_age" placeholder="e.g. 34">
+          </div>
+          <div class="field">
+            <label for="patient_gender">Gender</label>
+            <select id="patient_gender">
+              <option value="">Select</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="toggle-field">
+            <div class="toggle-copy">
+              <span class="toggle-title">Outdoor Sports Person</span>
+              <span class="toggle-hint">Enable if the patient is a trained athlete — applies athlete-specific reference ranges</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="outdoor_sports_person" aria-label="Outdoor Sports Person">
+              <span class="toggle-track" aria-hidden="true"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>2D Echo report file</label>
+          <div class="dropzone" id="dropzone">
+            <div class="icon">📄</div>
+            <div>Drag & drop the report here, or click to browse</div>
+            <div style="font-size:12.5px; color:var(--ink-soft); margin-top:4px;">PDF, JPG, PNG, TIFF — up to 25MB</div>
+            <div class="file-picked" id="file-picked"></div>
+          </div>
+          <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg,.tiff,.bmp,.webp" style="display:none;">
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="submit-btn" style="margin-top:10px;">Upload & Start Extraction</button>
+      </form>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-grid">
+        <div class="footer-col footer-brand-col">
+          <div class="footer-brand">
+            <span class="logo-heart" aria-hidden="true">
+              <svg viewBox="0 0 40 40" width="24" height="24">
+                <defs>
+                  <linearGradient id="lhGrad2" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#2A52BE"/><stop offset="100%" stop-color="#00C9A7"/>
+                  </linearGradient>
+                  <clipPath id="lhClip2"><path d="M20 34 C10 26 3 19 3 12.5 C3 6.5 7.5 3 12.5 3 C16 3 19 5 20 8 C21 5 24 3 27.5 3 C32.5 3 37 6.5 37 12.5 C37 19 30 26 20 34 Z"/></clipPath>
+                </defs>
+                <path class="lh-shape" d="M20 34 C10 26 3 19 3 12.5 C3 6.5 7.5 3 12.5 3 C16 3 19 5 20 8 C21 5 24 3 27.5 3 C32.5 3 37 6.5 37 12.5 C37 19 30 26 20 34 Z" fill="url(#lhGrad2)"/>
+                <g clip-path="url(#lhClip2)"><rect class="lh-scan" x="-6" y="0" width="7" height="40" fill="rgba(255,255,255,0.9)"/></g>
+                <path class="lh-wave" d="M5,20 L12,20 L15,12 L19,28 L22,9 L25,20 L35,20" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span class="brand-name">EchoWise AI</span>
+          </div>
+          <div class="foot-line">ADT Baramati</div>
+          <div class="foot-line"><a href="mailto:adtbaramatiresearch@gmail.com">adtbaramatiresearch@gmail.com</a></div>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <div class="footer-social">
+            <a href="#" aria-label="LinkedIn" title="LinkedIn">in</a>
+            <a href="#" aria-label="X (Twitter)" title="X (Twitter)">X</a>
+            <a href="#" aria-label="Instagram" title="Instagram">IG</a>
+            <a href="#" aria-label="YouTube" title="YouTube">YT</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; <span id="foot-year"></span> All Rights reserved.</span>
+        <span>Engineered by Research Interns in ADT Baramati</span>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script src="/static/js/common.js"></script>
+<script>
+  API.requireAuth();
+  initTopbar();
+  initFooter();
+
+  const dropzone = document.getElementById("dropzone");
+  const fileInput = document.getElementById("file-input");
+  const filePicked = document.getElementById("file-picked");
+  let selectedFile = null;
+
+  dropzone.addEventListener("click", () => fileInput.click());
+  ["dragover", "dragenter"].forEach(evt =>
+    dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add("dragover"); }));
+  ["dragleave", "drop"].forEach(evt =>
+    dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove("dragover"); }));
+  dropzone.addEventListener("drop", e => {
+    if (e.dataTransfer.files.length) setFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener("change", () => {
+    if (fileInput.files.length) setFile(fileInput.files[0]);
+  });
+
+  function setFile(file) {
+    selectedFile = file;
+    filePicked.textContent = `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+  }
+
+  const form = document.getElementById("upload-form");
+  const errorBox = document.getElementById("error-box");
+  const submitBtn = document.getElementById("submit-btn");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorBox.classList.remove("show");
+
+    if (!selectedFile) {
+      errorBox.textContent = "Please choose a report file to upload.";
+      errorBox.classList.add("show");
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Uploading…";
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    formData.append("patient_name", document.getElementById("patient_name").value.trim());
+    formData.append("patient_age", document.getElementById("patient_age").value.trim());
+    formData.append("patient_gender", document.getElementById("patient_gender").value);
+    formData.append("is_athlete", document.getElementById("outdoor_sports_person").checked ? "true" : "false");
+
+    try {
+      const res = await fetch("/api/reports/upload", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${API.token()}` },
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Upload failed.");
+      window.location.href = `/processing/${data.report_uid}`;
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.classList.add("show");
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Upload & Start Extraction";
+    }
+  });
+</script>
+</body>
+</html>

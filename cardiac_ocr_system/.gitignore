@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+venv/
+.venv/
+.pytest_cache/
+backend/cardiac.db
+backend/app/uploads/*
+!backend/app/uploads/.gitkeep
+backend/extractions/*
+!backend/extractions/.gitkeep
+backend/tools/.ocr_cache/
+backend/*.json
+.DS_Store
+.env
+backend/.env
+

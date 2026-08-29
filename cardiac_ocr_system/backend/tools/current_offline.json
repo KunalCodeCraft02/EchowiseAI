@@ -1,0 +1,938 @@
+{
+  "totals": {
+    "correct": 142,
+    "wrong": 2,
+    "false_positive": 0,
+    "missed": 17
+  },
+  "per_report": {
+    "60c94819d79a4ff2884640ee8425d8cd.jpeg": {
+      "EF": {
+        "expected": "73.3%",
+        "actual": "73.3%",
+        "bucket": "correct"
+      },
+      "LVIDd": {
+        "expected": "4.31 cm",
+        "actual": "4.31 cm",
+        "bucket": "correct"
+      },
+      "LVIDs": {
+        "expected": "2.5 cm",
+        "actual": "2.5 cm",
+        "bucket": "correct"
+      },
+      "IVSd": {
+        "expected": "1.19 cm",
+        "actual": null,
+        "bucket": "missed"
+      },
+      "PWd": {
+        "expected": "0.84 cm",
+        "actual": "0.84 cm",
+        "bucket": "correct"
+      },
+      "LA_Diameter": {
+        "expected": {
+          "any": [
+            "3.94 cm",
+            "4.87 cm"
+          ]
+        },
+        "actual": "3.94 cm",
+        "bucket": "correct"
+      },
+      "Ao_Root": {
+        "expected": "3.03 cm",
+        "actual": null,
+        "bucket": "missed"
+      },
+      "RV_Size": {
+        "expected": "4.03 cm",
+        "actual": "4.03 cm",
+        "bucket": "correct"
+      },
+      "E_A_Ratio": {
+        "expected": "1.12",
+        "actual": "1.12",
+        "bucket": "correct"
+      },
+      "PASP": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "Wall_Motion": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "Pericardial_Effusion": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "Clots_Thrombus": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      }
+    },
+    "26cf310207a24aaa886c207b5465b8a2.jpeg": {
+      "EF": {
+        "expected": "60%",
+        "actual": "60%",
+        "bucket": "correct"
+      },
+      "PASP": {
+        "expected": {
+          "any": [
+            "16 mmHg",
+            "25 mmHg"
+          ]
+        },
+        "actual": "16 mmHg",
+        "bucket": "correct"
+      },
+      "AV": {
+        "expected": {
+          "contains": "sclerosis"
+        },
+        "actual": "sclerosis. Other valves are structurally normal",
+        "bucket": "correct"
+      },
+      "TV": {
+        "expected": {
+          "contains": "trivial"
+        },
+        "actual": "Normal pulmonary venous flow",
+        "bucket": "wrong"
+      },
+      "Wall_Motion": {
+        "expected": {
+          "contains": "no"
+        },
+        "actual": "No",
+        "bucket": "correct"
+      },
+      "Pericardial_Effusion": {
+        "expected": {
+          "contains": "no"
+        },
+        "actual": null,
+        "bucket": "missed"
+      },
+      "Clots_Thrombus": {
+        "expected": {
+          "contains": "no"
+        },
+        "actual": null,
+        "bucket": "missed"
+      },
+      "IVC": {
+        "expected": {
+          "contains": "not visualized"
+        },
+        "actual": null,
+        "bucket": "missed"
+      },
+      "LVIDd": {
+        "expected": {
+          "qualitative_ok": true
+        },
+        "actual": null,
+        "bucket": "correct"
+      },
+      "LVIDs": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "IVSd": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "PWd": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "LA_Diameter": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "E_A_Ratio": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      }
+    },
+    "546ad9b9330c4b508ca93769578a1704.jpeg": {
+      "EF": {
+        "expected": "55%",
+        "actual": "55%",
+        "bucket": "correct"
+      },
+      "Ao_Root": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "LA_Diameter": {
+        "expected": {
+          "qualitative_ok": true
+        },
+        "actual": null,
+        "bucket": "correct"
+      },
+      "LVIDd": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "LVIDs": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "IVSd": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "PWd": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "E_A_Ratio": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "PASP": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "Wall_Motion": {
+        "expected": {
+          "qualitative_ok": true
+        },
+        "actual": "Left atrial size is normal",
+        "bucket": "correct"
+      },
+      "AV": {
+        "expected": {
+          "contains": "normal"
+        },
+        "actual": "is normal. The valve is",
+        "bucket": "correct"
+      },
+      "MV": {
+        "expected": {
+          "contains": "normal"
+        },
+        "actual": "anmular calcification",
+        "bucket": "wrong"
+      },
+      "TV": {
+        "expected": {
+          "contains": "normal"
+        },
+        "actual": "There is normal mobility. No vegetations are seen",
+        "bucket": "correct"
+      },
+      "PV": {
+        "expected": {
+          "contains": "normal"
+        },
+        "actual": null,
+        "bucket": "missed"
+      },
+      "Pericardial_Effusion": {
+        "expected": {
+          "contains": "no"
+        },
+        "actual": null,
+        "bucket": "missed"
+      },
+      "IVC": {
+        "expected": {
+          "contains": "normal"
+        },
+        "actual": null,
+        "bucket": "missed"
+      }
+    },
+    "49dcc63eb5a64fe082ba0abb7a67a195.jpeg": {
+      "EF": {
+        "expected": "73%",
+        "actual": null,
+        "bucket": "missed"
+      },
+      "LVIDd": {
+        "expected": "3.4 cm",
+        "actual": "3.4 cm",
+        "bucket": "correct"
+      },
+      "LVIDs": {
+        "expected": "2 cm",
+        "actual": null,
+        "bucket": "missed"
+      },
+      "IVSd": {
+        "expected": "0.8 cm",
+        "actual": "0.8 cm",
+        "bucket": "correct"
+      },
+      "PWd": {
+        "expected": "0.8 cm",
+        "actual": "0.8 cm",
+        "bucket": "correct"
+      },
+      "LA_Diameter": {
+        "expected": "2.1 cm",
+        "actual": "2.1 cm",
+        "bucket": "correct"
+      },
+      "Ao_Diameter": {
+        "expected": "2.4 cm",
+        "actual": "2.4 cm",
+        "bucket": "correct"
+      },
+      "RV_Size": {
+        "expected": {
+          "contains": "normal"
+        },
+        "actual": "Normal",
+        "bucket": "correct"
+      },
+      "RA_Size": {
+        "expected": {
+          "contains": "normal"
+        },
+        "actual": "Normal",
+        "bucket": "correct"
+      },
+      "MV": {
+        "expected": {
+          "contains": "mvp"
+        },
+        "actual": null,
+        "bucket": "missed"
+      },
+      "AV": {
+        "expected": {
+          "contains": "normal"
+        },
+        "actual": "Normal",
+        "bucket": "correct"
+      },
+      "TV": {
+        "expected": {
+          "contains": "normal"
+        },
+        "actual": "Normal",
+        "bucket": "correct"
+      },
+      "PV": {
+        "expected": {
+          "contains": "normal"
+        },
+        "actual": "Normal",
+        "bucket": "correct"
+      },
+      "E_A_Ratio": {
+        "expected": "1.2",
+        "actual": null,
+        "bucket": "missed"
+      },
+      "PASP": {
+        "expected": "22 mmHg",
+        "actual": "22 mmHg",
+        "bucket": "correct"
+      },
+      "Wall_Motion": {
+        "expected": {
+          "contains": "no"
+        },
+        "actual": null,
+        "bucket": "missed"
+      },
+      "Pericardial_Effusion": {
+        "expected": {
+          "contains": "no"
+        },
+        "actual": null,
+        "bucket": "missed"
+      },
+      "Clots_Thrombus": {
+        "expected": {
+          "contains": "no"
+        },
+        "actual": null,
+        "bucket": "missed"
+      }
+    },
+    "fc44fe64f5db41de8625df1c449ad6f0.jpeg": {
+      "EF": {
+        "expected": {
+          "any": [
+            "73%",
+            "76%"
+          ]
+        },
+        "actual": "76%",
+        "bucket": "correct"
+      },
+      "LVIDd": {
+        "expected": "4.8 cm",
+        "actual": "4.8 cm",
+        "bucket": "correct"
+      },
+      "LVIDs": {
+        "expected": "2.9 cm",
+        "actual": "2.9 cm",
+        "bucket": "correct"
+      },
+      "IVSd": {
+        "expected": "0.8 cm",
+        "actual": "0.8 cm",
+        "bucket": "correct"
+      },
+      "IVSs": {
+        "expected": "1.5 cm",
+        "actual": "1.5 cm",
+        "bucket": "correct"
+      },
+      "PWd": {
+        "expected": "0.9 cm",
+        "actual": "0.9 cm",
+        "bucket": "correct"
+      },
+      "PWs": {
+        "expected": "1.6 cm",
+        "actual": "1.6 cm",
+        "bucket": "correct"
+      },
+      "LA_Diameter": {
+        "expected": "3.7 cm",
+        "actual": "3.7 cm",
+        "bucket": "correct"
+      },
+      "LA_Diameter_Indexed": {
+        "expected": "1.9 cm/m2",
+        "actual": "1.9 cm/m2",
+        "bucket": "correct"
+      },
+      "LVIDd_Indexed": {
+        "expected": "2.5 cm/m2",
+        "actual": "2.5 cm/m2",
+        "bucket": "correct"
+      },
+      "RV_Size": {
+        "expected": "2.7 cm",
+        "actual": "2.7 cm",
+        "bucket": "correct"
+      },
+      "RA_Size": {
+        "expected": "2.9 cm",
+        "actual": "2.9 cm",
+        "bucket": "correct"
+      },
+      "Ao_Diameter": {
+        "expected": "2.8 cm",
+        "actual": "2.8 cm",
+        "bucket": "correct"
+      },
+      "Ao_Annulus": {
+        "expected": "1.9 cm",
+        "actual": "1.9 cm",
+        "bucket": "correct"
+      },
+      "Ao_Root": {
+        "expected": "2.6 cm",
+        "actual": "2.6 cm",
+        "bucket": "correct"
+      },
+      "Ao_STJ": {
+        "expected": "2.6 cm",
+        "actual": "2.6 cm",
+        "bucket": "correct"
+      },
+      "PASP": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      }
+    },
+    "c9617d4e9d22421ab278b996e8d267a0.jpeg": {
+      "LVIDd": {
+        "expected": "2.6 cm",
+        "actual": "2.6 cm",
+        "bucket": "correct"
+      },
+      "LVIDs": {
+        "expected": "1.5 cm",
+        "actual": "1.5 cm",
+        "bucket": "correct"
+      },
+      "IVSd": {
+        "expected": "0.5 cm",
+        "actual": "0.5 cm",
+        "bucket": "correct"
+      },
+      "IVSs": {
+        "expected": "0.6 cm",
+        "actual": "0.6 cm",
+        "bucket": "correct"
+      },
+      "PWd": {
+        "expected": "0.5 cm",
+        "actual": "0.5 cm",
+        "bucket": "correct"
+      },
+      "PWs": {
+        "expected": "0.5 cm",
+        "actual": "0.5 cm",
+        "bucket": "correct"
+      },
+      "LA_Diameter": {
+        "expected": "1.3 cm",
+        "actual": "1.3 cm",
+        "bucket": "correct"
+      },
+      "Ao_Diameter": {
+        "expected": "1.4 cm",
+        "actual": "1.4 cm",
+        "bucket": "correct"
+      },
+      "EF": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "PASP": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "E_A_Ratio": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      }
+    },
+    "7167a1ff05fe4b11a470fc4645fb6e1e.jpeg": {
+      "EF": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "LVIDd": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "LVIDs": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "IVSd": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "PWd": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "LA_Diameter": {
+        "expected": {
+          "qualitative_ok": true
+        },
+        "actual": "Normal",
+        "bucket": "correct"
+      },
+      "E_A_Ratio": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "MV": {
+        "expected": {
+          "contains": "normal"
+        },
+        "actual": "Normal",
+        "bucket": "correct"
+      },
+      "AV": {
+        "expected": {
+          "contains": "normal"
+        },
+        "actual": "Trileaflet Normal",
+        "bucket": "correct"
+      },
+      "TV": {
+        "expected": {
+          "contains": "normal"
+        },
+        "actual": "Normal",
+        "bucket": "correct"
+      },
+      "PV": {
+        "expected": {
+          "contains": "normal"
+        },
+        "actual": "Normal",
+        "bucket": "correct"
+      },
+      "RV_Size": {
+        "expected": {
+          "contains": "normal"
+        },
+        "actual": "Normal",
+        "bucket": "correct"
+      },
+      "RA_Size": {
+        "expected": {
+          "contains": "normal"
+        },
+        "actual": "Normal",
+        "bucket": "correct"
+      }
+    },
+    "00b0e2bd42054ef89591379b5697427e.jpeg": {
+      "EF": {
+        "expected": "65%",
+        "actual": "65%",
+        "bucket": "correct"
+      },
+      "LVIDd": {
+        "expected": "4.2 cm",
+        "actual": "4.2 cm",
+        "bucket": "correct"
+      },
+      "LVIDs": {
+        "expected": "2.5 cm",
+        "actual": "2.5 cm",
+        "bucket": "correct"
+      },
+      "IVSd": {
+        "expected": "1 cm",
+        "actual": null,
+        "bucket": "missed"
+      },
+      "IVSs": {
+        "expected": "1.4 cm",
+        "actual": "1.4 cm",
+        "bucket": "correct"
+      },
+      "PWd": {
+        "expected": "0.8 cm",
+        "actual": "0.8 cm",
+        "bucket": "correct"
+      },
+      "PWs": {
+        "expected": "1.3 cm",
+        "actual": "1.3 cm",
+        "bucket": "correct"
+      },
+      "LA_Diameter": {
+        "expected": "3.1 cm",
+        "actual": "3.1 cm",
+        "bucket": "correct"
+      },
+      "LA_Diameter_Indexed": {
+        "expected": "1.9 cm/m2",
+        "actual": "1.9 cm/m2",
+        "bucket": "correct"
+      },
+      "Ao_Annulus": {
+        "expected": "1.8 cm",
+        "actual": "1.8 cm",
+        "bucket": "correct"
+      },
+      "Ao_Root": {
+        "expected": "2.7 cm",
+        "actual": "2.7 cm",
+        "bucket": "correct"
+      },
+      "Ao_STJ": {
+        "expected": "2.2 cm",
+        "actual": "2.2 cm",
+        "bucket": "correct"
+      },
+      "RA_Size": {
+        "expected": "3.3 cm",
+        "actual": "3.3 cm",
+        "bucket": "correct"
+      },
+      "RV_Size": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "IVC": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "E_A_Ratio": {
+        "expected": "1.62",
+        "actual": "1.62",
+        "bucket": "correct"
+      },
+      "PASP": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      }
+    },
+    "24995d9467ca494c90d34e8b3281c9d8.pdf": {
+      "EF": {
+        "expected": "40%",
+        "actual": "40%",
+        "bucket": "correct"
+      },
+      "LVIDd": {
+        "expected": "6.6 cm",
+        "actual": "6.6 cm",
+        "bucket": "correct"
+      },
+      "LVIDs": {
+        "expected": "4.8 cm",
+        "actual": "4.8 cm",
+        "bucket": "correct"
+      },
+      "IVSd": {
+        "expected": "1.3 cm",
+        "actual": "1.3 cm",
+        "bucket": "correct"
+      },
+      "PWd": {
+        "expected": "1.3 cm",
+        "actual": "1.3 cm",
+        "bucket": "correct"
+      },
+      "LA_Diameter": {
+        "expected": "5 cm",
+        "actual": "5 cm",
+        "bucket": "correct"
+      },
+      "Ao_Diameter": {
+        "expected": "2.3 cm",
+        "actual": "2.3 cm",
+        "bucket": "correct"
+      },
+      "RV_Size": {
+        "expected": "4 cm",
+        "actual": "4 cm",
+        "bucket": "correct"
+      },
+      "PASP": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "E_A_Ratio": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      }
+    },
+    "2a70b3a920b0421aba6b4f5a1018e16e.pdf": {
+      "EF": {
+        "expected": "68%",
+        "actual": "68%",
+        "bucket": "correct"
+      },
+      "LVIDd": {
+        "expected": "6.2 cm",
+        "actual": "6.2 cm",
+        "bucket": "correct"
+      },
+      "LVIDs": {
+        "expected": "4.8 cm",
+        "actual": "4.8 cm",
+        "bucket": "correct"
+      },
+      "LA_Diameter": {
+        "expected": "5.4 cm",
+        "actual": "5.4 cm",
+        "bucket": "correct"
+      },
+      "RV_Size": {
+        "expected": "4.4 cm",
+        "actual": "4.4 cm",
+        "bucket": "correct"
+      },
+      "MV": {
+        "expected": {
+          "any": [
+            {
+              "contains": "regurgitation"
+            },
+            {
+              "contains": "thicken"
+            }
+          ]
+        },
+        "actual": "Thickened",
+        "bucket": "correct"
+      },
+      "Wall_Motion": {
+        "expected": {
+          "contains": "no"
+        },
+        "actual": "No",
+        "bucket": "correct"
+      },
+      "IVSd": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "PWd": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "PASP": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "E_A_Ratio": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      }
+    },
+    "14643df461e34d6a8619ef6e1ada6c3c.pdf": {
+      "EF": {
+        "expected": "68%",
+        "actual": "68%",
+        "bucket": "correct"
+      },
+      "LVIDd": {
+        "expected": "6.2 cm",
+        "actual": "6.2 cm",
+        "bucket": "correct"
+      },
+      "LVIDs": {
+        "expected": "4.8 cm",
+        "actual": "4.8 cm",
+        "bucket": "correct"
+      },
+      "LA_Diameter": {
+        "expected": "5.4 cm",
+        "actual": "5.4 cm",
+        "bucket": "correct"
+      },
+      "RV_Size": {
+        "expected": "4.4 cm",
+        "actual": "4.4 cm",
+        "bucket": "correct"
+      },
+      "MV": {
+        "expected": {
+          "any": [
+            {
+              "contains": "regurgitation"
+            },
+            {
+              "contains": "thicken"
+            }
+          ]
+        },
+        "actual": "Thickened",
+        "bucket": "correct"
+      },
+      "Wall_Motion": {
+        "expected": {
+          "contains": "no"
+        },
+        "actual": null,
+        "bucket": "missed"
+      },
+      "IVSd": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "PWd": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "PASP": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "E_A_Ratio": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      }
+    },
+    "21ebbd5d02104693991e254063299c99.pdf": {
+      "EF": {
+        "expected": "40%",
+        "actual": "40%",
+        "bucket": "correct"
+      },
+      "Ao_Root": {
+        "expected": "2.3 cm",
+        "actual": "2.3 cm",
+        "bucket": "correct"
+      },
+      "IVSd": {
+        "expected": "1.3 cm",
+        "actual": "1.3 cm",
+        "bucket": "correct"
+      },
+      "LA_Diameter": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "LVIDd": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "LVIDs": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "PWd": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "E_A_Ratio": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "PASP": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      },
+      "Wall_Motion": {
+        "expected": null,
+        "actual": null,
+        "bucket": "correct"
+      }
+    }
+  }
+}
